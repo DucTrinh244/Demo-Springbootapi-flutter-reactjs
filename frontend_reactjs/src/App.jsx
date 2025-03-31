@@ -1,14 +1,15 @@
-import toast from 'react-hot-toast';
-import './App.css';
+import React from 'react';
+// import Footer from './components/footer';
 
-function App() {
+const App = () => {
 
   return (
-    <div>
-      <h1>this is a mainpage </h1>
-      <button onClick={()=> {toast.success("click me")}}> click me </button>
-    </div>
-  )
-}
+  <>
+    {/* <NavBar/> */}
+    {/* <Footer/> */}
+  </>
+  );
+  
+};
 
-export default App
+export default App;
