@@ -18,7 +18,9 @@ public class TaskService {
 
     // Tạo nhiệm vụ và liên kết với dự án
     public Task createTask(Task task, String projectId) {
-        Project project = projectRepository.findById(projectId).orElseThrow(() -> new RuntimeException("Project not found"));
+        Project project = projectRepository
+                .findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
 
         task.setProject(project);  // Liên kết nhiệm vụ với dự án
         return taskRepository.save(task);

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-@CrossOrigin(origins ={ "http://172.26.3.103/","http://localhost:5173/"})
+@CrossOrigin(origins ={ "http://192.168.1.124/","http://localhost:5173/"})
 @RestController
 @RequestMapping("/api/projects")
 public class ProjectController {
@@ -49,5 +49,17 @@ public class ProjectController {
     public ResponseEntity<Void> deleteProject(@PathVariable String id) {
         projectService.deleteProject(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // API để thêm thành viên vào dự án
+    @PutMapping("/{projectId}/members")
+    public ResponseEntity<Project> addMembersToProject(@PathVariable String projectId,
+                                                       @RequestBody List<String> memberEmails) {
+        try {
+            Project updatedProject = projectService.addMembersToProject(projectId, memberEmails);
+            return ResponseEntity.ok(updatedProject);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 }

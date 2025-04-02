@@ -20,12 +20,14 @@ public class TaskController {
         Task task = new Task();
         task.setTaskName(taskRequest.getTaskName());
         task.setDescription(taskRequest.getDescription());
-        task.setAssignee(taskRequest.getAssignee());
+        task.setAssigneeId(taskRequest.getAssigneeId());
         task.setStartDate(taskRequest.getStartDate());
         task.setEndDate(taskRequest.getEndDate());
         task.setPriority(taskRequest.getPriority());
         task.setStatus(taskRequest.getStatus());
-
+        if (taskRequest.getSubtasks() != null) {
+            task.setSubtasks(taskRequest.getSubtasks());
+        }
         Task createdTask = taskService.createTask(task, projectId);  // Gửi projectId cho Service
         return ResponseEntity.status(201).body(createdTask);
     }

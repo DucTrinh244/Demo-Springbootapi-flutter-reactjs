@@ -7,6 +7,8 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.List;
+
 @Setter
 @Getter
 @NoArgsConstructor
@@ -18,12 +20,14 @@ public class Task {
     private String id;
     private String taskName;
     private String description;
-    private String assignee;
+    private String assigneeId;
     private String startDate;
     private String endDate;
     private String priority;
     private String status;
     private Project project;
+    private List<SubTask> subtasks;  // List Task
+
 
 
 }

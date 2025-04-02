@@ -1,29 +1,19 @@
 package com.ManagementProject.demoManagementProject.Models;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.util.List;
-
-@Document(collection = "projects")
-@Getter
 @Setter
+@Getter
 @NoArgsConstructor
-@AllArgsConstructor
-public class Project {
-    @Id
-    private String projectId;
-    private String projectName;
+public class SubTask {
+    private String subtaskName;
     private String description;
+    private String assignee;
     private String startDate;
     private String endDate;
-    private String projectOwnerId;
     private String status;
-    private double budget;
-    private List<String> members; // Danh sách ID của các thành viên tham gia vào dự án
 
 }
