@@ -11,72 +11,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Service
-public class ProjectService {
+public interface ProjectService {
 
-    @Autowired
-    private ProjectRepository projectRepository;
+    Project createProject(Project project);
 
-    @Autowired
-    private UserRepository userRepository;  // Dùng để kiểm tra email người dùng tồn tại
+     List<Project> getAllProjects();
 
-    public Project createProject(Project project) {
-        return projectRepository.save(project);
-    }
+     Optional<Project> getProjectById(String projectId);
 
-    public List<Project> getAllProjects() {
-        return projectRepository.findAll();
-    }
+     Project updateProject(String projectId, Project projectDetails);
 
-    public Optional<Project> getProjectById(String projectId) {
-        return projectRepository.findById(projectId);
-    }
+     void deleteProject(String projectId);
 
-    public Project updateProject(String projectId, Project projectDetails) {
-        Optional<Project> existingProject = projectRepository.findById(projectId);
-        if (existingProject.isPresent()) {
-            Project updatedProject = existingProject.get();
-            updatedProject.setProjectName(projectDetails.getProjectName());
-            updatedProject.setDescription(projectDetails.getDescription());
-            updatedProject.setStartDate(projectDetails.getStartDate());
-            updatedProject.setEndDate(projectDetails.getEndDate());
-            updatedProject.setStatus(projectDetails.getStatus());
-            updatedProject.setBudget(projectDetails.getBudget());
-            return projectRepository.save(updatedProject);
-        }
-        return null;
-    }
-
-    // Xóa dự án
-    public void deleteProject(String projectId) {
-        projectRepository.deleteById(projectId);
-    }
-
-    public Project addMembersToProject(String projectId, List<String> memberEmails) {
-        for (String email : memberEmails) {
-            if (userRepository.findByEmail(email) == null) {
-                throw new IllegalArgumentException("Email chưa được đăng ký trong hệ thống : " + email);
-            }
-        }
-
-        Optional<Project> projectOpt = projectRepository.findByProjectId(projectId);
-        if (projectOpt.isEmpty()) {
-            throw new IllegalArgumentException("Dự án không tồn tại");
-        }
-
-        Project project = projectOpt.get();
-
-        if (project.getMembers() == null) {
-            project.setMembers(new ArrayList<>());
-        }
-
-        List<String> newMembers = memberEmails.stream()
-                .filter(email -> !project.getMembers().contains(email)) // Chỉ thêm nếu email chưa có
-                .collect(Collectors.toList());
-        project.getMembers().addAll(newMembers);
-
-        return projectRepository.save(project);
-    }
-
-
+     Project addMembersToProject(String projectId, List<String> memberEmails);
 }
