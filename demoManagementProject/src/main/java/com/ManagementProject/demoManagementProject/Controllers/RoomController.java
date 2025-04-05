@@ -11,7 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/rooms")
@@ -29,15 +31,10 @@ public class RoomController {
 
     @PostMapping
     public ResponseEntity<?> createRoom(@RequestBody RoomRequest roomRequest) {
-        String roomId = roomRequest.getRoomId();
+        String roomName = roomRequest.getRoomName();
         String userEmail = roomRequest.getUserEmail();
 
-        // Kiểm tra phòng đã tồn tại
-        if (roomRepository.findByRoomId(roomId) != null) {
-            return ResponseEntity.badRequest().body("Room already exists");
-        }
 
-        // Kiểm tra user có tồn tại không
         User user = userRepository.findByEmail(userEmail); // hoặc findById(userId).orElse(null)
         if (user == null) {
             return ResponseEntity.badRequest().body("User not found");
@@ -45,12 +42,16 @@ public class RoomController {
 
         // Tạo room
         Room room = new Room();
-        room.setRoomId(roomId);
+        room.setRoomName(roomName);
         room.setUserEmail(userEmail);
-
+        room.setMembers(Collections.singletonList(userEmail));
         Room savedRoom = roomRepository.save(room);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedRoom);
+        String updatedRoomId = savedRoom.getId()+"_"+roomName;
+        savedRoom.setRoomId(updatedRoomId);
+        Room updatedRoom = roomRepository.save(savedRoom); // Lưu lại lần nữa
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(updatedRoom);
     }
 
 
@@ -58,15 +59,18 @@ public class RoomController {
     // join rooms
 
     @GetMapping("/{roomId}")
-    public ResponseEntity<?> joinRooms(@PathVariable String roomId){// chú ý pathvariable
+    public ResponseEntity<?> joinRooms(@PathVariable String roomId, @RequestParam String userEmail) {
+        Room room = roomRepository.findByRoomId(roomId);
 
-        Room room =roomRepository.findByRoomId(roomId);
-
-        if(room == null){
+        if (room == null) {
             return ResponseEntity.badRequest().body("Room not found");
         }
-        return ResponseEntity.ok(room);// return room
+        if (!room.getMembers().contains(userEmail)) {
+            room.addMember(userEmail); // Thêm thành viên vào room
+            roomRepository.save(room); // Lưu lại phòng với thành viên mới
+        }
 
+        return ResponseEntity.ok(room); // Trả về room nếu đúng
     }
 
 

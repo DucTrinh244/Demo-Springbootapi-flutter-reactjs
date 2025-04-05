@@ -23,4 +23,7 @@ public class Room {
     private String userEmail;
     private List<Message> messages= new ArrayList<>();
     private List<String> members= new ArrayList<>();
+    public void addMember(String userEmail) {
+        this.members.add(userEmail); // Thêm thành viên vào danh sách
+    }
 }

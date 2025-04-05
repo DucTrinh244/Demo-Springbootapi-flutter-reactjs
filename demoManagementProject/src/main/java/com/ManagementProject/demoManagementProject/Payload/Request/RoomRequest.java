@@ -10,6 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoomRequest {
-    String roomId;
+    String roomName;
     String userEmail;
 }
