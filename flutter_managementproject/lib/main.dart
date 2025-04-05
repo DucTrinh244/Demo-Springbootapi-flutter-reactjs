@@ -1,10 +1,17 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_managementproject/screens/auth/login_screen.dart';
+import 'package:flutter_managementproject/screens/auth/register_screen.dart';
+import 'package:flutter_managementproject/screens/chat/chat_screen.dart';
+import 'package:flutter_managementproject/screens/chat/main_chat_screen.dart';
+import 'package:flutter_managementproject/screens/dashboard_screen.dart';
+import 'package:flutter_managementproject/screens/project/add_project_screen.dart';
+import 'package:flutter_managementproject/screens/project/main_project_screen.dart';
+import 'package:flutter_managementproject/screens/task/add_task_screen.dart';
+import 'package:flutter_managementproject/screens/task/main_task_screen.dart';
+import 'package:flutter_managementproject/screens/user/profile_screen.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -12,67 +19,83 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: UserListScreen());
-  }
-}
-
-class UserListScreen extends StatefulWidget {
-  const UserListScreen({super.key});
-
-  @override
-  // ignore: library_private_types_in_public_api
-  _UserListScreenState createState() => _UserListScreenState();
-}
-
-class _UserListScreenState extends State<UserListScreen> {
-  List users = [];
-
-  @override
-  void initState() {
-    super.initState();
-    fetchUsers();
-  }
-
-  Future<void> fetchUsers() async {
-    final response = await http.get(
-      Uri.parse('http://192.168.0.44:8080/api/users'),
-    );
-    if (response.statusCode == 200) {
-      setState(() {
-        users = json.decode(response.body);
-      });
-    }
-  }
-
-  Future<void> addUser() async {
-    final response = await http.post(
-      Uri.parse('http://192.168.0.44:8080/api/users'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({"name": "John pikc", "email": "johndoe@example.com"}),
-    );
-
-    if (response.statusCode == 200) {
-      fetchUsers(); // Refresh data
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('User List')),
-      body: ListView.builder(
-        itemCount: users.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(users[index]['name']),
-            subtitle: Text(users[index]['email']),
-          );
-        },
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: addUser,
-        child: Icon(Icons.add),
-      ),
+      home: const DashboardScreen(),
+      // home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      // routes: appRoutes,
+      routes: {
+        '/profile': (context) => const ProfileScreen(),
+        '/dashboard': (context) => const DashboardScreen(),
+        '/project': (context) => const MainProjectScreen(),
+        '/task': (context) => const MainTaskScreen(),
+        '/add-project': (context) => const AddProjectScreen(),
+        '/add-task': (context) => const CreateTaskScreen(),
+        '/main-chat': (context) => const MainChatScreen(),
+        '/chat': (context) => const ChatScreen(groupName: 'Flutter Developers'),
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
+      },
     );
   }
 }
+
+// class MyHomePage extends StatelessWidget {
+//   const MyHomePage({super.key, required this.title});
+
+//   final String title;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+//         title: Text(title),
+//       ),
+//       body: GridView.builder(
+//         padding: const EdgeInsets.all(16.0),
+//         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+//           crossAxisCount: 2, // Số cột
+//           crossAxisSpacing: 10.0,
+//           mainAxisSpacing: 10.0,
+//         ),
+//         itemCount: 2, // Chỉ có 2 ô
+//         itemBuilder: (context, index) {
+//           return GestureDetector(
+//             onTap: () {
+//               if (index == 0) {
+//                 Navigator.push(
+//                   context,
+//                   MaterialPageRoute(builder: (context) => AddUserPage()),
+//                 );
+//               } else if (index == 1) {
+//                 Navigator.push(
+//                   context,
+//                   MaterialPageRoute(builder: (context) => UserListScreen()),
+//                 );
+//               }
+//             },
+//             child: Container(
+//               decoration: BoxDecoration(
+//                 color: Colors.deepPurple[100],
+//                 borderRadius: BorderRadius.circular(8.0),
+//               ),
+//               child: Center(
+//                 child: Text(
+//                   index == 0 ? 'Add User' : 'User List',
+//                   style: const TextStyle(
+//                     fontSize: 18,
+//                     fontWeight: FontWeight.bold,
+//                   ),
+//                 ),
+//               ),
+//             ),
+//           );
+//         },
+//       ),
+//     );
+//   }
+// }
