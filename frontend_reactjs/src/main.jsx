@@ -5,11 +5,6 @@ import NavBar from './components/NavBar';
 import AppRoutes from "./config/Routes.jsx";
 import './index.css';
 
-
-
-
-
-
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
       <NavBar/>
