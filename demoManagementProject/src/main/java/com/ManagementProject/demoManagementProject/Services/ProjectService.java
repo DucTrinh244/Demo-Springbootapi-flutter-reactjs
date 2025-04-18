@@ -19,9 +19,14 @@ public interface ProjectService {
 
      Optional<Project> getProjectById(String projectId);
 
+     Optional<Project> getProjectByEmail(String email);
+
      Project updateProject(String projectId, Project projectDetails);
 
      void deleteProject(String projectId);
 
      Project addMembersToProject(String projectId, List<String> memberEmails);
+
+ List<Project> findByMembersContaining(String email);
+
 }

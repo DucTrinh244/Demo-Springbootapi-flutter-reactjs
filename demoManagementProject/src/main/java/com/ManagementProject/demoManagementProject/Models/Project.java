@@ -23,7 +23,7 @@ public class Project {
     private String endDate;
     private String projectOwnerId;
     private String status;
+    private String priority;
     private double budget;
-    private List<String> members; // Danh sách ID của các thành viên tham gia vào dự án
-
+    private List<String> members;
 }

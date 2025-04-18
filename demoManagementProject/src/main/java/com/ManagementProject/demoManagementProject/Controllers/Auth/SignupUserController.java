@@ -20,7 +20,10 @@ public class SignupUserController {
     public ResponseEntity<?> createUser(@RequestBody SignupRequest signupRequest){
         UserDTO creatuser =authService.creatUser(signupRequest);
         if(creatuser == null)
-            return new ResponseEntity<>("User is not created, try again ", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(
+                    "User is not created, try again ",
+                    HttpStatus.BAD_REQUEST
+            );
         return new ResponseEntity<>(creatuser,HttpStatus.CREATED);
     }
 

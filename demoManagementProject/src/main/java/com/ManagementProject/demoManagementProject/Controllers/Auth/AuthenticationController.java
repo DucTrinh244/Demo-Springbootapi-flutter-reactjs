@@ -11,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -49,4 +50,17 @@ public class AuthenticationController {
         final String jwt = jwtUtil.generateToken(userDetails.getUsername());
         return new AuthenticationResponse(jwt);
     }
+    @GetMapping("/validate-token")
+    public AuthenticationResponse validateToken(@RequestBody String token) {
+        try {
+            String username = jwtUtil.extractUsername(token);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            boolean isValid = jwtUtil.validateToken(token, userDetails);
+            return new AuthenticationResponse(isValid ? token : null);
+        } catch (Exception e) {
+            return new AuthenticationResponse(e.getMessage());
+        }
+    }
+
+
 }

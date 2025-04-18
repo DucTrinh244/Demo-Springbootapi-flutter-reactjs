@@ -15,6 +15,10 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public UserDTO creatUser(SignupRequest signupRequest) {
+
+        if (userRepository.existsByEmail(signupRequest.getEmail())) {
+            return null;
+        }
         User user = new User();
         user.setEmail(signupRequest.getEmail());
         user.setName(signupRequest.getName());

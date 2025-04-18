@@ -1,13 +1,17 @@
 package com.ManagementProject.demoManagementProject.DTOS;
 
 
-import lombok.Data;
+import com.ManagementProject.demoManagementProject.Models.User;
+import lombok.*;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 @Data
 public class UserDTO {
-    private Long id;;
     private String name;
     private String email;
-    private String password;
     private String phone;
+
 }

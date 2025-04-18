@@ -5,8 +5,11 @@ import com.ManagementProject.demoManagementProject.Models.Message;
 import com.ManagementProject.demoManagementProject.Models.Room;
 import com.ManagementProject.demoManagementProject.Models.User;
 import com.ManagementProject.demoManagementProject.Payload.Request.RoomRequest;
+import com.ManagementProject.demoManagementProject.Payload.Response.ApiResponse;
 import com.ManagementProject.demoManagementProject.Repositories.RoomRepository;
 import com.ManagementProject.demoManagementProject.Repositories.UserRepository;
+import com.ManagementProject.demoManagementProject.Utils.JwtUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +23,8 @@ import java.util.Optional;
 public class RoomController {
     private RoomRepository roomRepository;
     private UserRepository userRepository;
+    @Autowired
+    private JwtUtil jwtUtil;
 
     public RoomController(RoomRepository roomRepository,UserRepository userRepository) {
         this.roomRepository = roomRepository;
@@ -94,6 +99,17 @@ public class RoomController {
         return ResponseEntity.ok(paginatedMessages);
 
     }
+    @GetMapping("/my-rooms")
+    public ResponseEntity<?> getMyRooms(@RequestHeader("Authorization") String token) {
+        String jwt = token.replace("Bearer ", "");
+        String userEmail = jwtUtil.extractUsername(jwt);
+        List<Room> rooms = roomRepository.findByMembersContaining(userEmail);
 
-
+        ApiResponse<List<Room>> response = new ApiResponse<>(
+                "success",
+                "Lấy danh sách phòng thành công",
+                rooms
+        );
+        return ResponseEntity.ok(response);
+    }
 }

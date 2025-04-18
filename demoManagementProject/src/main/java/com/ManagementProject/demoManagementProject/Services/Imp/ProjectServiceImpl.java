@@ -36,6 +36,12 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public Optional<Project> getProjectByEmail(String email) {
+        return Optional.empty();
+    }
+
+
+    @Override
     public Project updateProject(String projectId, Project projectDetails) {
         Optional<Project> existingProject = projectRepository.findById(projectId);
         if (existingProject.isPresent()) {
@@ -82,5 +88,10 @@ public class ProjectServiceImpl implements ProjectService {
         project.getMembers().addAll(newMembers);
 
         return projectRepository.save(project);
+    }
+
+    @Override
+    public List<Project> findByMembersContaining(String email) {
+        return projectRepository.findByMembersContains(email);
     }
 }
