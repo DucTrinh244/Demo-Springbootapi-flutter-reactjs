@@ -64,6 +64,11 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public List<Project> getProjectsByOwner(String ownerId) {
+        return projectRepository.findByProjectOwnerId(ownerId);
+    }
+
+    @Override
     public Project addMembersToProject(String projectId, List<String> memberEmails) {
         for (String email : memberEmails) {
             if (userRepository.findByEmail(email) == null) {

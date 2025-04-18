@@ -90,5 +90,14 @@ public class ProjectController {
         }
         return ResponseEntity.ok(projects);
     }
+    @GetMapping("/created-projects")
+    public ResponseEntity<List<Project>> getProjectsByMemberEmailCreated() {
+        String email= CurrentUserUtil.getCurrentUserEmail();
+        List<Project> projects = projectService.getProjectsByOwner(email);
+        if(projects.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(projects);
+    }
 
 }

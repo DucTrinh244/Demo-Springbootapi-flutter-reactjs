@@ -4,6 +4,8 @@ import com.ManagementProject.demoManagementProject.Payload.Response.Authenticati
 import com.ManagementProject.demoManagementProject.Utils.JwtUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -50,17 +52,25 @@ public class AuthenticationController {
         final String jwt = jwtUtil.generateToken(userDetails.getUsername());
         return new AuthenticationResponse(jwt);
     }
-    @GetMapping("/validate-token")
-    public AuthenticationResponse validateToken(@RequestBody String token) {
+    @PostMapping("/validate-token")
+    public ResponseEntity<AuthenticationResponse> validateToken(@RequestBody String token) {
         try {
             String username = jwtUtil.extractUsername(token);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             boolean isValid = jwtUtil.validateToken(token, userDetails);
-            return new AuthenticationResponse(isValid ? token : null);
+
+            if (isValid) {
+                return ResponseEntity.ok(new AuthenticationResponse(token)); // Nếu token hợp lệ, trả về token
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new AuthenticationResponse("Token is expired or invalid"));
+            }
         } catch (Exception e) {
-            return new AuthenticationResponse(e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new AuthenticationResponse("Invalid token: " + e.getMessage()));
         }
     }
+
 
 
 }

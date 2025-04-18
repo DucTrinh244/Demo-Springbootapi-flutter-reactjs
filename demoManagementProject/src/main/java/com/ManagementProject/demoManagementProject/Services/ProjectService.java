@@ -25,6 +25,8 @@ public interface ProjectService {
 
      void deleteProject(String projectId);
 
+        List<Project> getProjectsByOwner(String ownerId);
+
      Project addMembersToProject(String projectId, List<String> memberEmails);
 
  List<Project> findByMembersContaining(String email);
