@@ -25,7 +25,12 @@ class HomeScreen extends StatelessWidget {
             _buildGridItem(context, Icons.person, 'Task', '/task'),
             _buildGridItem(context, Icons.chat, 'Chat', '/chat'),
             _buildGridItem(context, Icons.login, 'Login', '/login'),
-            _buildGridItem(context, Icons.logout, 'Register', '/register'),
+            _buildGridItem(
+              context,
+              Icons.data_array,
+              'Data Local',
+              '/LocalData',
+            ),
           ],
         ),
       ),

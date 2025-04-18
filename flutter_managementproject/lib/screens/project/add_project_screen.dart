@@ -1,4 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_managementproject/Services/globals.dart';
+import 'package:fluttertoast/fluttertoast.dart'; // Import Fluttertoast
+import 'package:http/http.dart' as http;
 
 class AddProjectScreen extends StatefulWidget {
   const AddProjectScreen({super.key});
@@ -16,7 +21,73 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
   final TextEditingController _endDateController = TextEditingController();
 
   String _status = 'Pending';
-  String _priority = 'Medium'; // Giá trị mặc định cho Priority
+  String _priority = 'Medium';
+
+  // URL của API backend
+  Future<void> _saveProject() async {
+    if (_formKey.currentState!.validate()) {
+      String projectName = _projectNameController.text;
+      String description = _descriptionController.text;
+      String startDate = _startDateController.text;
+      String endDate = _endDateController.text;
+
+      // Dữ liệu dự án dưới dạng JSON
+      final Map<String, dynamic> projectData = {
+        'projectName': projectName,
+        'description': description,
+        'startDate': startDate,
+        'endDate': endDate,
+        'status': _status,
+        'priority': _priority,
+      };
+
+      // Gửi HTTP POST request tới backend
+      try {
+        final response = await http.post(
+          Uri.parse('$baseUrl/api/projects'),
+          headers: await getAuthHeaders(),
+          body: json.encode(projectData),
+        );
+
+        if (response.statusCode == 200) {
+          // Thành công, hiển thị thông báo thành công
+          Fluttertoast.showToast(
+            msg: "Project created successfully",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.green,
+            textColor: Colors.white,
+            fontSize: 16.0,
+          );
+          // ignore: use_build_context_synchronously
+          Navigator.pushReplacementNamed(context, '/dashboard');
+        } else {
+          // Lỗi, hiển thị thông báo lỗi
+          Fluttertoast.showToast(
+            msg: "Failed to create project: ${response.body}",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0,
+          );
+        }
+      } catch (e) {
+        // Hiển thị thông báo lỗi nếu có lỗi trong quá trình gửi request
+        Fluttertoast.showToast(
+          msg: "Error: $e",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
+    }
+  }
 
   Future<void> _selectDate(
     BuildContext context,
@@ -33,24 +104,6 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
         controller.text =
             "${picked.toLocal()}".split(' ')[0]; // Format: yyyy-mm-dd
       });
-    }
-  }
-
-  void _saveProject() {
-    if (_formKey.currentState!.validate()) {
-      String projectName = _projectNameController.text;
-      String description = _descriptionController.text;
-      String startDate = _startDateController.text;
-      String endDate = _endDateController.text;
-
-      print('Project Name: $projectName');
-      print('Description: $description');
-      print('Start Date: $startDate');
-      print('End Date: $endDate');
-      print('Status: $_status');
-      print('Priority: $_priority');
-
-      Navigator.pop(context);
     }
   }
 

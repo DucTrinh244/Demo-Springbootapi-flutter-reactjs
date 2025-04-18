@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -76,8 +77,26 @@ class ProfileScreen extends StatelessWidget {
             ListTile(
               leading: Icon(Icons.logout, color: Colors.redAccent),
               title: Text('Logout'),
-              onTap: () {
-                // Handle logout
+              onTap: () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.remove('jwtToken');
+
+                // ignore: use_build_context_synchronously
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('👋 Đã đăng xuất thành công!'),
+                    backgroundColor: Colors.blue,
+                  ),
+                );
+
+                // Chuyển về màn hình đăng nhập
+                // ignore: use_build_context_synchronously
+                Navigator.pushNamedAndRemoveUntil(
+                  // ignore: use_build_context_synchronously
+                  context,
+                  '/login',
+                  (Route<dynamic> route) => false,
+                );
               },
             ),
           ],

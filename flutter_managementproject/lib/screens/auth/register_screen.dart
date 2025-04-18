@@ -1,7 +1,82 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
-class RegisterScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_managementproject/Services/globals.dart';
+import 'package:http/http.dart' as http;
+
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
+
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+
+  bool _isLoading = false;
+
+  Future<void> register() async {
+    final url = Uri.parse('$baseUrl/register'); // Sửa URL nếu cần thiết
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await http.post(
+        url,
+        headers: defaultHeaders,
+        body: jsonEncode({
+          'email': emailController.text,
+          'name': nameController.text,
+          'password': passwordController.text,
+          'phone': phoneController.text,
+        }),
+      );
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      // ignore: use_build_context_synchronously
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Đăng ký thành công! Vui lòng đăng nhập lại '),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // ignore: use_build_context_synchronously
+        Navigator.pushReplacementNamed(context, '/login');
+      } else {
+        final errorMsg =
+            response.body.isNotEmpty
+                ? jsonDecode(response.body)['message'] ?? 'Đăng ký thất bại!'
+                : 'Đăng ký thất bại!';
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('❌ $errorMsg'), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ Có lỗi xảy ra: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +98,7 @@ class RegisterScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               TextField(
+                controller: nameController,
                 decoration: InputDecoration(
                   hintText: 'Full Name',
                   border: OutlineInputBorder(
@@ -33,6 +109,7 @@ class RegisterScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               TextField(
+                controller: emailController,
                 decoration: InputDecoration(
                   hintText: 'Email',
                   border: OutlineInputBorder(
@@ -43,6 +120,7 @@ class RegisterScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               TextField(
+                controller: passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   hintText: 'Password',
@@ -52,21 +130,37 @@ class RegisterScreen extends StatelessWidget {
                   prefixIcon: const Icon(Icons.lock),
                 ),
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 100,
-                    vertical: 16,
-                  ),
-                  shape: RoundedRectangleBorder(
+              const SizedBox(height: 16),
+              TextField(
+                controller: phoneController,
+                decoration: InputDecoration(
+                  hintText: 'Phone Number',
+                  border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  backgroundColor: Colors.green,
+                  prefixIcon: const Icon(Icons.phone),
                 ),
-                child: const Text('Register', style: TextStyle(fontSize: 16)),
               ),
+              const SizedBox(height: 24),
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                    onPressed: register,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 100,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      backgroundColor: Colors.green,
+                    ),
+                    child: const Text(
+                      'Register',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
               const SizedBox(height: 12),
               TextButton(
                 onPressed: () {
