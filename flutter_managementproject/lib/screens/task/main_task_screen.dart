@@ -1,8 +1,127 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_managementproject/widgets/customer_drawer.dart';
+import 'dart:convert';
 
-class MainTaskScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_managementproject/Services/globals.dart';
+import 'package:flutter_managementproject/screens/models/TaskModel.dart';
+import 'package:flutter_managementproject/widgets/customer_drawer.dart';
+import 'package:http/http.dart' as http;
+
+// SubTask model class
+
+class MainTaskScreen extends StatefulWidget {
   const MainTaskScreen({super.key});
+
+  @override
+  State<MainTaskScreen> createState() => _MainTaskScreenState();
+}
+
+class _MainTaskScreenState extends State<MainTaskScreen> {
+  List<TaskModel> _allTasks = [];
+  bool _isLoading = true;
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchMyTasks();
+  }
+
+  // Method to fetch tasks assigned to current user
+  Future<void> _fetchMyTasks() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      // Change this to your actual API URL
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/tasks/my-task'),
+        headers: await getAuthHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> tasksJson = jsonDecode(response.body);
+        setState(() {
+          _allTasks =
+              tasksJson.map((json) => TaskModel.fromJson(json)).toList();
+          _isLoading = false;
+        });
+      } else if (response.statusCode == 404) {
+        setState(() {
+          _allTasks = [];
+          _isLoading = false;
+          _errorMessage = 'No tasks found.';
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+          _errorMessage =
+              'Failed to load tasks. Error code: ${response.statusCode}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Error connecting to the server: $e';
+      });
+    }
+  }
+
+  // Get tasks filtered by status
+  List<TaskModel> _getFilteredTasks(String status) {
+    if (status == 'All') {
+      return _allTasks;
+    }
+    return _allTasks.where((task) => task.status == status).toList();
+  }
+
+  // Get color based on task priority
+  Color _getPriorityColor(String? priority) {
+    switch (priority?.toUpperCase()) {
+      case 'HIGH':
+        return Colors.red;
+      case 'MEDIUM':
+        return Colors.amber;
+      case 'LOW':
+        return Colors.green;
+      default:
+        return Colors.blue;
+    }
+  }
+
+  // Format date string
+  String _formatDate(String? dateString) {
+    if (dateString == null || dateString.isEmpty) {
+      return 'No date';
+    }
+
+    try {
+      final date = DateTime.parse(dateString);
+      return '${date.day} ${_getMonthName(date.month)}';
+    } catch (e) {
+      return dateString;
+    }
+  }
+
+  // Get month name from month number
+  String _getMonthName(int month) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return months[month - 1];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,256 +151,285 @@ class MainTaskScreen extends StatelessWidget {
         ),
       ),
       drawer: CustomDrawer(),
-      body: SingleChildScrollView(
-        // Thêm SingleChildScrollView để cuộn nội dung
+      body:
+          _isLoading
+              ? Center(child: CircularProgressIndicator())
+              : _errorMessage.isNotEmpty
+              ? Center(
+                child: Text(_errorMessage, style: TextStyle(color: Colors.red)),
+              )
+              : _buildMyTasksTab(),
+    );
+  }
+
+  Widget _buildMyTasksTab() {
+    return RefreshIndicator(
+      onRefresh: _fetchMyTasks,
+      child: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              'Tasks Assigned to Me',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 16),
+
+            // Filter options
             Row(
               children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/add-task');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      // Implement filter functionality
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.filter_list,
+                            size: 20,
+                            color: Colors.grey[600],
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'Filter',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   ),
-                  child: Text(
-                    '+ Create Task',
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      // Implement sort functionality
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.sort, size: 20, color: Colors.grey[600]),
+                          SizedBox(width: 4),
+                          Text(
+                            'Sort',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 20),
-            Text(
-              'Task Progress',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 12),
-            TaskProgressWidget(
-              taskName: 'UI/UX Design',
-              completed: 2,
-              total: 7,
-              color: Colors.purple,
-            ),
-            TaskProgressWidget(
-              taskName: 'Website Design',
-              completed: 1,
-              total: 3,
-              color: Colors.blue,
-            ),
-            TaskProgressWidget(
-              taskName: 'Quality Assurance',
-              completed: 2,
-              total: 7,
-              color: Colors.green,
-            ),
-            TaskProgressWidget(
-              taskName: 'Development',
-              completed: 1,
-              total: 5,
-              color: Colors.orange,
-            ),
+
             SizedBox(height: 24),
-            Text(
-              'Recent Activity',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+
+            // Status categories
+            DefaultTabController(
+              length: 4,
+              child: Column(
+                children: [
+                  TabBar(
+                    isScrollable: true,
+                    labelColor: Colors.deepPurple,
+                    unselectedLabelColor: Colors.grey,
+                    indicatorColor: Colors.deepPurple,
+                    tabs: [
+                      Tab(text: 'All'),
+                      Tab(text: 'In Progress'),
+                      Tab(text: 'Completed'),
+                      Tab(text: 'Pending'),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  SizedBox(
+                    height:
+                        MediaQuery.of(context).size.height *
+                        0.6, // Dynamic height
+                    child: TabBarView(
+                      children: [
+                        // All Tasks
+                        _buildTasksListFromData(_allTasks),
+
+                        // In Progress Tasks
+                        _buildTasksListFromData(
+                          _getFilteredTasks('In Progress'),
+                        ),
+
+                        // Completed Tasks
+                        _buildTasksListFromData(_getFilteredTasks('completed')),
+
+                        // Pending Tasks
+                        _buildTasksListFromData(_getFilteredTasks('Pending')),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-            SizedBox(height: 16),
-            ActivityCard(activity: 'Rechard Add New Task'),
-            SizedBox(height: 16),
-            Text(
-              'In Progress',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16),
-            TaskCard(
-              taskName: 'Quality Assurance',
-              status: 'MEDIUM',
-              dueDate: '28 Mar',
-              comments: 5,
-              attachments: 5,
-              groupName: 'Box of Crayons',
-              priorityColor: Colors.green,
-              iconColor: Colors.yellow,
-            ),
-            TaskCard(
-              taskName: 'Website Design',
-              status: 'LOW',
-              dueDate: '12 Feb',
-              comments: 3,
-              attachments: 4,
-              groupName: 'Practice to Perfect',
-              priorityColor: Colors.blue,
-              iconColor: Colors.orange,
-            ),
-            SizedBox(height: 24),
-            Text(
-              'Task Progress',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16),
           ],
         ),
       ),
     );
   }
-}
 
-class TaskProgressWidget extends StatelessWidget {
-  final String taskName;
-  final int completed;
-  final int total;
-  final Color color;
+  Widget _buildTasksListFromData(List<TaskModel> tasks) {
+    if (tasks.isEmpty) {
+      return Center(child: Text('No tasks found in this category'));
+    }
 
-  const TaskProgressWidget({
-    super.key,
-    required this.taskName,
-    required this.completed,
-    required this.total,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            taskName,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          SizedBox(height: 4),
-          LinearProgressIndicator(
-            value: completed / total,
-            backgroundColor: Colors.grey[300],
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-          ),
-          SizedBox(height: 4),
-          Text('$completed/$total', style: TextStyle(color: Colors.grey)),
-        ],
-      ),
-    );
-  }
-}
-
-class ActivityCard extends StatelessWidget {
-  final String activity;
-
-  const ActivityCard({super.key, required this.activity});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: ListTile(
-        leading: Icon(Icons.circle, color: Colors.pink, size: 20),
-        title: Text(activity),
-      ),
+    return ListView.separated(
+      physics: NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      itemCount: tasks.length,
+      separatorBuilder: (context, index) => SizedBox(height: 16),
+      itemBuilder: (context, index) {
+        final task = tasks[index];
+        return TaskCard(
+          task: task,
+          priorityColor: _getPriorityColor(task.priority),
+          iconColor: Colors.deepPurple,
+          formattedDueDate: _formatDate(task.endDate),
+          subtasksCount: task.subtasks?.length ?? 0,
+        );
+      },
     );
   }
 }
 
 class TaskCard extends StatelessWidget {
-  final String taskName;
-  final String status;
-  final String dueDate;
-  final int comments;
-  final int attachments;
-  final String groupName;
+  final TaskModel task;
   final Color priorityColor;
   final Color iconColor;
+  final String formattedDueDate;
+  final int subtasksCount;
 
   const TaskCard({
     super.key,
-    required this.taskName,
-    required this.status,
-    required this.dueDate,
-    required this.comments,
-    required this.attachments,
-    required this.groupName,
+    required this.task,
     required this.priorityColor,
     required this.iconColor,
+    required this.formattedDueDate,
+    required this.subtasksCount,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(
-                  taskName,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Spacer(),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: priorityColor,
-                    borderRadius: BorderRadius.circular(20),
+    // Calculate completed subtasks count
+    final completedSubtasks =
+        task.subtasks
+            ?.where((subtask) => subtask.status == "completed")
+            .length ??
+        0;
+
+    return InkWell(
+      onTap: () {
+        Navigator.pushNamed(context, '/task-detail', arguments: task);
+      },
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      task.taskName ?? 'Untitled Task',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                  child: Text(status, style: TextStyle(color: Colors.white)),
-                ),
-              ],
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In id nec scelerisque massa.',
-            ),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-                SizedBox(width: 4),
-                Text(dueDate, style: TextStyle(color: Colors.grey)),
-                Spacer(),
-                Row(
-                  children: [
-                    Icon(Icons.comment, size: 16, color: Colors.grey),
+                  SizedBox(width: 8),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: priorityColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      task.priority?.toUpperCase() ?? 'NORMAL',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8),
+              Text(task.description ?? 'No description'),
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                  SizedBox(width: 4),
+                  Text(formattedDueDate, style: TextStyle(color: Colors.grey)),
+                  Spacer(),
+                  if (subtasksCount > 0) ...[
+                    Icon(Icons.checklist, size: 16, color: Colors.grey),
                     SizedBox(width: 4),
-                    Text('$comments', style: TextStyle(color: Colors.grey)),
+                    Text(
+                      '$completedSubtasks/$subtasksCount',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                    SizedBox(width: 16),
                   ],
-                ),
-                SizedBox(width: 16),
-                Row(
-                  children: [
-                    Icon(Icons.attach_file, size: 16, color: Colors.grey),
-                    SizedBox(width: 4),
-                    Text('$attachments', style: TextStyle(color: Colors.grey)),
-                  ],
+                  Icon(Icons.label, size: 16, color: Colors.grey),
+                  SizedBox(width: 4),
+                  Text(
+                    task.status ?? 'No status',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+              if (task.subtasks != null && task.subtasks!.isNotEmpty) ...[
+                SizedBox(height: 12),
+                LinearProgressIndicator(
+                  value:
+                      subtasksCount > 0 ? completedSubtasks / subtasksCount : 0,
+                  backgroundColor: Colors.grey[300],
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
                 ),
               ],
-            ),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                Text('Assigned to: ', style: TextStyle(color: Colors.grey)),
-                CircleAvatar(
-                  radius: 15,
-                  backgroundColor: iconColor,
-                  child: Icon(Icons.person, color: Colors.white, size: 16),
-                ),
-                SizedBox(width: 8),
-                Text(groupName),
-              ],
-            ),
-          ],
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  Text('Assigned to: ', style: TextStyle(color: Colors.grey)),
+                  CircleAvatar(
+                    radius: 15,
+                    backgroundColor: iconColor,
+                    child: Icon(Icons.person, color: Colors.white, size: 16),
+                  ),
+                  SizedBox(width: 8),
+                  Text(task.assigneeEmail ?? 'Unassigned'),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

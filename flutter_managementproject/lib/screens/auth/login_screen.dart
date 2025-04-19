@@ -15,15 +15,12 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
+  bool _obscurePassword = true;
   bool _isLoading = false;
 
   Future<void> login() async {
     final url = Uri.parse('$baseUrl/authentication');
-
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       final response = await http.post(
@@ -35,9 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }),
       );
 
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -45,11 +40,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('jwtToken', token);
+        await prefs.setString('email', emailController.text);
 
-        // Kiểm tra lại sau khi lưu
         final savedToken = prefs.getString('jwtToken');
         if (savedToken != null && savedToken == token) {
-          // ignore: use_build_context_synchronously
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('✅ Đăng nhập thành công và đã lưu token!'),
@@ -57,7 +51,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           );
         } else {
-          // ignore: use_build_context_synchronously
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
@@ -68,23 +61,18 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
 
-        // ignore: use_build_context_synchronously
         Navigator.pushReplacementNamed(context, '/dashboard');
       } else {
         final errorMsg =
             response.body.isNotEmpty
                 ? jsonDecode(response.body)['message'] ?? 'Đăng nhập thất bại!'
                 : 'Đăng nhập thất bại!';
-        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('❌ $errorMsg'), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      // ignore: use_build_context_synchronously
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('❌ Có lỗi xảy ra: $e'),
@@ -116,6 +104,8 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 16),
               TextField(
                 controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
                 decoration: InputDecoration(
                   hintText: 'Email',
                   border: OutlineInputBorder(
@@ -127,13 +117,27 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 16),
               TextField(
                 controller: passwordController,
-                obscureText: true,
+                obscureText: _obscurePassword,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => login(), // Nhấn Enter gọi login
                 decoration: InputDecoration(
                   hintText: 'Password',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   prefixIcon: const Icon(Icons.lock),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -155,9 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
               const SizedBox(height: 12),
               TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/register');
-                },
+                onPressed: () => Navigator.pushNamed(context, '/register'),
                 child: const Text("Don't have an account? Register"),
               ),
             ],

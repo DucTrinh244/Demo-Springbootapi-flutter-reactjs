@@ -88,7 +88,7 @@ class _SharedPrefsPageState extends State<SharedPrefsPage> {
                       itemBuilder: (context, index) {
                         String key = _allPrefs.keys.elementAt(index);
                         return ListTile(
-                          title: Text('$key'),
+                          title: Text(key),
                           subtitle: Text('${_allPrefs[key]}'),
                         );
                       },

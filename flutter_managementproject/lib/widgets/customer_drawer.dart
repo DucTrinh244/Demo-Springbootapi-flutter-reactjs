@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});
@@ -34,8 +35,27 @@ class CustomDrawer extends StatelessWidget {
           ListTile(
             title: Text('Log Out'),
             leading: Icon(Icons.exit_to_app),
-            onTap: () {
-              // Handle log out logic here
+            onTap: () async {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.remove('jwtToken');
+              await prefs.remove('email');
+
+              // ignore: use_build_context_synchronously
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('👋 Đã đăng xuất thành công!'),
+                  backgroundColor: Colors.blue,
+                ),
+              );
+
+              // Chuyển về màn hình đăng nhập
+              // ignore: use_build_context_synchronously
+              Navigator.pushNamedAndRemoveUntil(
+                // ignore: use_build_context_synchronously
+                context,
+                '/login',
+                (Route<dynamic> route) => false,
+              );
             },
           ),
         ],

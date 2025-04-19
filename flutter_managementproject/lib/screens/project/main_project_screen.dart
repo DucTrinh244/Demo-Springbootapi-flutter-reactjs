@@ -42,7 +42,7 @@ class MainProjectScreen extends StatelessWidget {
             labelColor: Colors.deepPurple,
             unselectedLabelColor: Colors.black54,
             indicatorColor: Colors.deepPurple,
-            tabs: [Tab(text: 'Dự án của tôi'), Tab(text: 'Tôi tạo')],
+            tabs: [Tab(text: 'My Projects'), Tab(text: 'Created Projects')],
           ),
         ),
         drawer: CustomDrawer(),
@@ -141,27 +141,54 @@ class ProjectListView extends StatelessWidget {
   }
 }
 
-class ProjectCard extends StatelessWidget {
+class ProjectCard extends StatefulWidget {
   final ProjectModel project;
 
   const ProjectCard({super.key, required this.project});
 
   @override
+  // ignore: library_private_types_in_public_api
+  _ProjectCardState createState() => _ProjectCardState();
+}
+
+class _ProjectCardState extends State<ProjectCard> {
+  String? currentEmail;
+
+  @override
+  void initState() {
+    super.initState();
+    getEmail().then((email) {
+      setState(() {
+        currentEmail = email;
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     double progress =
-        project.status == 'Completed'
+        widget.project.status == 'Completed'
             ? 1.0
-            : project.status == 'In Progress'
+            : widget.project.status == 'In Progress'
             ? 0.5
             : 0.2;
 
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(
-          context,
-          '/detail-project',
-          arguments: {'project': project},
-        );
+        if (currentEmail == widget.project.projectOwnerId) {
+          Navigator.pushNamed(
+            context,
+            '/detail-project',
+            arguments: {'project': widget.project},
+          );
+        }
+        if (currentEmail != widget.project.projectOwnerId) {
+          Navigator.pushNamed(
+            context,
+            '/detail-project-over',
+            arguments: {'project': widget.project},
+          );
+        }
       },
       child: Card(
         elevation: 6,
@@ -171,14 +198,13 @@ class ProjectCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Các dòng dưới đây giữ nguyên
               Row(
                 children: [
                   Icon(Icons.art_track, size: 40, color: Colors.deepPurple),
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      project.projectName,
+                      widget.project.projectName,
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -186,18 +212,49 @@ class ProjectCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(Icons.edit, color: Colors.deepPurple),
-                    onPressed: () {
-                      // Chỉnh sửa
-                    },
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.delete, color: Colors.deepPurple),
-                    onPressed: () {
-                      // Xóa
-                    },
-                  ),
+                  if (currentEmail == widget.project.projectOwnerId) ...[
+                    IconButton(
+                      icon: Icon(Icons.edit, color: Colors.deepPurple),
+                      onPressed: () {
+                        // Chỉnh sửa
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.delete, color: Colors.deepPurple),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Confirm Delete'),
+                              content: Text(
+                                'Are you sure you want to delete this project?',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop(); // Đóng dialog
+                                  },
+                                  child: Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(
+                                      context,
+                                    ).pop(); // Đóng dialog sau khi xoá
+                                  },
+                                  child: Text(
+                                    'Delete',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
                 ],
               ),
               SizedBox(height: 12),
@@ -206,7 +263,7 @@ class ProjectCard extends StatelessWidget {
                   Icon(Icons.calendar_today, size: 16, color: Colors.grey),
                   SizedBox(width: 4),
                   Text(
-                    '${project.startDate} - ${project.endDate}',
+                    '${widget.project.startDate} - ${widget.project.endDate}',
                     style: TextStyle(color: Colors.grey),
                   ),
                 ],
@@ -217,7 +274,7 @@ class ProjectCard extends StatelessWidget {
                   Icon(Icons.person, size: 16, color: Colors.grey),
                   SizedBox(width: 4),
                   Text(
-                    'Người tạo: ${project.projectOwnerId}',
+                    'Người tạo: ${widget.project.projectOwnerId}',
                     style: TextStyle(color: Colors.grey),
                   ),
                 ],
@@ -228,12 +285,12 @@ class ProjectCard extends StatelessWidget {
                   Icon(Icons.check_circle, size: 16, color: Colors.grey),
                   SizedBox(width: 4),
                   Text(
-                    'Trạng thái: ${project.status}',
+                    'Trạng thái: ${widget.project.status}',
                     style: TextStyle(
                       color:
-                          project.status == 'Completed'
+                          widget.project.status == 'Completed'
                               ? Colors.green
-                              : project.status == 'In Progress'
+                              : widget.project.status == 'In Progress'
                               ? Colors.orange
                               : Colors.red,
                     ),
@@ -246,9 +303,9 @@ class ProjectCard extends StatelessWidget {
                 minHeight: 6,
                 backgroundColor: Colors.grey[300],
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  project.status == 'Completed'
+                  widget.project.status == 'Completed'
                       ? Colors.green
-                      : project.status == 'In Progress'
+                      : widget.project.status == 'In Progress'
                       ? Colors.orange
                       : Colors.red,
                 ),

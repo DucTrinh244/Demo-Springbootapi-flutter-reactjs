@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_managementproject/screens/auth/Splash_screen.dart';
 import 'package:flutter_managementproject/screens/auth/login_screen.dart';
 import 'package:flutter_managementproject/screens/auth/register_screen.dart';
 import 'package:flutter_managementproject/screens/chat/chat_screen.dart';
 import 'package:flutter_managementproject/screens/chat/main_chat_screen.dart';
 import 'package:flutter_managementproject/screens/check/shared_prefs_page.dart';
 import 'package:flutter_managementproject/screens/dashboard_screen.dart';
+import 'package:flutter_managementproject/screens/models/SubTaskModel.dart';
+import 'package:flutter_managementproject/screens/models/TaskModel.dart';
 import 'package:flutter_managementproject/screens/project/add_project_screen.dart';
+import 'package:flutter_managementproject/screens/project/detail_project_over_screen.dart';
 import 'package:flutter_managementproject/screens/project/detail_project_screen.dart';
 import 'package:flutter_managementproject/screens/project/main_project_screen.dart';
 import 'package:flutter_managementproject/screens/task/add_task_screen.dart';
+import 'package:flutter_managementproject/screens/task/detail_subtask.dart';
 import 'package:flutter_managementproject/screens/task/main_task_screen.dart';
+import 'package:flutter_managementproject/screens/task/task_detail_screen.dart';
 import 'package:flutter_managementproject/screens/user/profile_screen.dart';
 
 void main() {
@@ -26,7 +32,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const DashboardScreen(),
+      home:
+          const SplashScreen(), // ⚠️ ĐỔI TỪ DashboardScreen THÀNH SplashScreen
       // home: const MyHomePage(title: 'Flutter Demo Home Page'),
       // routes: appRoutes,
       routes: {
@@ -36,10 +43,29 @@ class MyApp extends StatelessWidget {
         '/task': (context) => const MainTaskScreen(),
         '/LocalData': (context) => const SharedPrefsPage(),
         '/add-project': (context) => const AddProjectScreen(),
-        '/add-task': (context) => const CreateTaskScreen(),
+        '/add-task': (context) {
+          final args =
+              ModalRoute.of(context)!.settings.arguments
+                  as Map<String, dynamic>;
+          return CreateTaskScreen(
+            projectId: args['projectId'],
+            projectName: args['projectName'],
+          );
+        },
+        '/task-detail':
+            (context) => TaskDetailScreen(
+              task: ModalRoute.of(context)!.settings.arguments as TaskModel,
+            ),
+        '/subtask-detail':
+            (context) => SubtaskDetailScreen(
+              subtask: ModalRoute.of(context)!.settings.arguments as SubTask,
+              onSubtaskUpdated: (SubTask) {},
+            ),
+
         '/chat': (context) => const ChatScreen(groupName: 'Flutter Developers'),
         '/main-chat': (context) => const MainChatScreen(),
         '/detail-project': (context) => const DetailProjectScreen(),
+        '/detail-project-over': (context) => const DetailProjectOverScreen(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
       },

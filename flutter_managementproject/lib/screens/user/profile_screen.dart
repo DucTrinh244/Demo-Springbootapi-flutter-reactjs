@@ -80,6 +80,7 @@ class ProfileScreen extends StatelessWidget {
               onTap: () async {
                 SharedPreferences prefs = await SharedPreferences.getInstance();
                 await prefs.remove('jwtToken');
+                await prefs.remove('email');
 
                 // ignore: use_build_context_synchronously
                 ScaffoldMessenger.of(context).showSnackBar(
