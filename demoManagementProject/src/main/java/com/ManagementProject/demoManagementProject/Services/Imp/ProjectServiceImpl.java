@@ -99,4 +99,10 @@ public class ProjectServiceImpl implements ProjectService {
     public List<Project> findByMembersContaining(String email) {
         return projectRepository.findByMembersContains(email);
     }
+
+    @Override
+    public boolean isProjectIDExists(String projectId) {
+
+        return projectRepository.existsById(projectId);
+    }
 }

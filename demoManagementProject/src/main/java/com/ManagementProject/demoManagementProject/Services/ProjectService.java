@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 public interface ProjectService {
 
-    Project createProject(Project project);
+     Project createProject(Project project);
 
      List<Project> getAllProjects();
 
@@ -25,10 +25,12 @@ public interface ProjectService {
 
      void deleteProject(String projectId);
 
-        List<Project> getProjectsByOwner(String ownerId);
+     List<Project> getProjectsByOwner(String ownerId);
 
      Project addMembersToProject(String projectId, List<String> memberEmails);
 
- List<Project> findByMembersContaining(String email);
+     List<Project> findByMembersContaining(String email);
+
+     boolean isProjectIDExists(String projectId);
 
 }

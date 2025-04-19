@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class SubTask {
     private String subtaskName;
     private String description;
-    private String assignee;
+    private String assigneeEmail;
     private String startDate;
     private String endDate;
     private String status;

@@ -20,12 +20,12 @@ public class Task {
     private String id;
     private String taskName;
     private String description;
-    private String assigneeId;
+    private String assigneeEmail;
     private String startDate;
     private String endDate;
     private String priority;
     private String status;
-    private Project project;
+    private String projectId;
     private List<SubTask> subtasks;  // List Task
 
 
