@@ -1,21 +1,55 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
-class MainChatScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_managementproject/Services/globals.dart';
+import 'package:flutter_managementproject/screens/chat/chat_screen.dart';
+import 'package:flutter_managementproject/screens/models/RoomModel.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
+
+class MainChatScreen extends StatefulWidget {
   const MainChatScreen({super.key});
 
-  // Danh sách nhóm mẫu
-  final List<Map<String, String>> groupChats = const [
-    {"name": "Flutter Developers"},
-    {"name": "Team Alpha"},
-    {"name": "Design Squad"},
-    {"name": "Backend Ninjas"},
-    {"name": "UI/UX Lovers"},
-    {"name": "Marketing Team"},
-    {"name": "Study Buddies"},
-    {"name": "Music Fans"},
-    {"name": "Project X"},
-    {"name": "Startup Hub"},
-  ];
+  @override
+  State<MainChatScreen> createState() => _MainChatScreenState();
+}
+
+class _MainChatScreenState extends State<MainChatScreen> {
+  late Future<List<RoomModel>> _roomsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRooms();
+  }
+
+  void _loadRooms() {
+    _roomsFuture = fetchMyRooms();
+  }
+
+  Future<List<RoomModel>> fetchMyRooms() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/rooms/my-rooms'),
+      headers: await getAuthHeaders(),
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonData = json.decode(response.body);
+      return jsonData.map((room) => RoomModel.fromJson(room)).toList();
+    } else if (response.statusCode == 404) {
+      return [];
+    } else {
+      Fluttertoast.showToast(
+        msg: 'Error: ${response.statusCode}',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+      throw Exception('Failed to load rooms');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,24 +59,55 @@ class MainChatScreen extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(12),
-        itemCount: groupChats.length,
-        itemBuilder: (context, index) {
-          final group = groupChats[index];
-          return _buildGroupCard(context, group['name']!);
+      body: FutureBuilder<List<RoomModel>>(
+        future: _roomsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No rooms found.'));
+          }
+
+          final rooms = snapshot.data!;
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: rooms.length,
+            itemBuilder: (context, index) {
+              final room = rooms[index];
+              return _buildGroupCard(context, room);
+            },
+          );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          // Navigate to create room and wait for result
+          final result = await Navigator.pushNamed(context, '/create-room');
+
+          // If result is true, reload rooms
+          if (result == true) {
+            setState(() {
+              _loadRooms();
+            });
+          }
+        },
+        backgroundColor: Colors.blueAccent,
+        tooltip: 'Tạo nhóm mới',
+        child: const Icon(Icons.add),
       ),
     );
   }
 
-  // Widget cho từng nhóm chat
-  Widget _buildGroupCard(BuildContext context, String groupName) {
+  Widget _buildGroupCard(BuildContext context, RoomModel room) {
     return GestureDetector(
       onTap: () {
-        ScaffoldMessenger.of(
+        Navigator.push(
           context,
-        ).showSnackBar(SnackBar(content: Text('Clicked on "$groupName"')));
+          MaterialPageRoute(builder: (context) => ChatScreen(room: room)),
+        );
       },
       child: Card(
         elevation: 4,
@@ -57,7 +122,7 @@ class MainChatScreen extends StatelessWidget {
             radius: 28,
             backgroundColor: Colors.blueAccent,
             child: Text(
-              groupName[0], // Ký tự đầu tiên
+              room.roomName[0].toUpperCase(),
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 24,
@@ -66,7 +131,7 @@ class MainChatScreen extends StatelessWidget {
             ),
           ),
           title: Text(
-            groupName,
+            room.roomName,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
           trailing: const Icon(Icons.arrow_forward_ios_rounded),

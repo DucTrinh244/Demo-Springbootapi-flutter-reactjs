@@ -1,30 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_managementproject/screens/chat/group_info_screen.dart';
+import 'package:flutter_managementproject/screens/models/MessageModel.dart';
+import 'package:flutter_managementproject/screens/models/RoomModel.dart';
 import 'package:intl/intl.dart';
 
-class ChatMessage {
-  final String username;
-  final String message;
-  final DateTime time;
-
-  ChatMessage({
-    required this.username,
-    required this.message,
-    required this.time,
-  });
-}
-
+// Lớp MessageModel đại diện cho một tin nhắn
 class ChatScreen extends StatefulWidget {
-  final String groupName;
+  final RoomModel room;
 
-  const ChatScreen({super.key, required this.groupName});
+  const ChatScreen({super.key, required this.room});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final List<ChatMessage> _messages = [];
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -34,11 +24,12 @@ class _ChatScreenState extends State<ChatScreen> {
     String msg = _messageController.text.trim();
     if (msg.isNotEmpty) {
       setState(() {
-        _messages.add(
-          ChatMessage(
-            username: currentUser,
-            message: msg,
-            time: DateTime.now(),
+        // Thêm tin nhắn mới vào RoomModel
+        widget.room.messages.add(
+          MessageModel(
+            sender: currentUser,
+            content: msg,
+            timeStamp: DateTime.now(),
           ),
         );
       });
@@ -64,7 +55,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.groupName),
+        title: Text(widget.room.roomName),
         backgroundColor: Colors.blueAccent,
         actions: [
           IconButton(
@@ -74,7 +65,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 context,
                 MaterialPageRoute(
                   builder:
-                      (context) => GroupInfoScreen(groupName: widget.groupName),
+                      (context) => GroupInfoScreen(
+                        room: widget.room,
+                      ), // Sử dụng RoomModel
                 ),
               );
             },
@@ -87,10 +80,10 @@ class _ChatScreenState extends State<ChatScreen> {
             child: ListView.builder(
               controller: _scrollController,
               padding: const EdgeInsets.all(12),
-              itemCount: _messages.length,
+              itemCount: widget.room.messages.length,
               itemBuilder: (context, index) {
-                final msg = _messages[index];
-                final isMe = msg.username == currentUser;
+                final msg = widget.room.messages[index];
+                final isMe = msg.sender == currentUser;
 
                 return Align(
                   alignment:
@@ -109,7 +102,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              msg.username,
+                              msg.sender,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
@@ -117,7 +110,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              _formatTime(msg.time),
+                              _formatTime(msg.timeStamp),
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey,
@@ -126,7 +119,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Text(msg.message, style: const TextStyle(fontSize: 16)),
+                        Text(msg.content, style: const TextStyle(fontSize: 16)),
                       ],
                     ),
                   ),

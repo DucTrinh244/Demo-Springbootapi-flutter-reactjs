@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_managementproject/screens/auth/Splash_screen.dart';
 import 'package:flutter_managementproject/screens/auth/login_screen.dart';
 import 'package:flutter_managementproject/screens/auth/register_screen.dart';
+import 'package:flutter_managementproject/screens/chat/add_room_sreen.dart';
 import 'package:flutter_managementproject/screens/chat/chat_screen.dart';
 import 'package:flutter_managementproject/screens/chat/main_chat_screen.dart';
 import 'package:flutter_managementproject/screens/check/shared_prefs_page.dart';
 import 'package:flutter_managementproject/screens/dashboard_screen.dart';
+import 'package:flutter_managementproject/screens/models/RoomModel.dart';
 import 'package:flutter_managementproject/screens/models/SubTaskModel.dart';
 import 'package:flutter_managementproject/screens/models/TaskModel.dart';
 import 'package:flutter_managementproject/screens/project/add_project_screen.dart';
@@ -59,11 +61,14 @@ class MyApp extends StatelessWidget {
         '/subtask-detail':
             (context) => SubtaskDetailScreen(
               subtask: ModalRoute.of(context)!.settings.arguments as SubTask,
-              onSubtaskUpdated: (SubTask) {},
             ),
 
-        '/chat': (context) => const ChatScreen(groupName: 'Flutter Developers'),
+        '/chat':
+            (context) => ChatScreen(
+              room: ModalRoute.of(context)!.settings.arguments as RoomModel,
+            ),
         '/main-chat': (context) => const MainChatScreen(),
+        '/create-room': (context) => const CreateRoomScreen(),
         '/detail-project': (context) => const DetailProjectScreen(),
         '/detail-project-over': (context) => const DetailProjectOverScreen(),
         '/login': (context) => const LoginScreen(),

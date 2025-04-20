@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_managementproject/Services/globals.dart';
 import 'package:flutter_managementproject/screens/models/SubTaskModel.dart';
 import 'package:flutter_managementproject/screens/models/TaskModel.dart';
+import 'package:flutter_managementproject/screens/task/detail_subtask.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,35 +29,43 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: IconThemeData(color: Colors.black),
-        title: Text('Task Detail', style: TextStyle(color: Colors.black)),
-        actions: [
-          IconButton(icon: Icon(Icons.edit_outlined), onPressed: () {}),
-          IconButton(icon: Icon(Icons.more_vert), onPressed: () {}),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildTaskHeader(),
-            SizedBox(height: 24),
-            _buildTaskDetails(),
-            SizedBox(height: 24),
-            _buildAssignedSection(),
-            SizedBox(height: 24),
-            // _buildAttachments(),
-            // SizedBox(height: 24),
-            _buildSubtasksSection(),
-            SizedBox(height: 24),
-            // _buildCommentsSection(),
+    // ignore: deprecated_member_use
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pop(
+          context,
+          true,
+        ); // Trả về "true" cho trang trước để biết là cần reload
+        return false; // Ngăn pop mặc định, vì mình đã pop thủ công rồi
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          iconTheme: IconThemeData(color: Colors.black),
+          title: Text('Task Detail', style: TextStyle(color: Colors.black)),
+          actions: [
+            IconButton(icon: Icon(Icons.edit_outlined), onPressed: () {}),
+            IconButton(icon: Icon(Icons.more_vert), onPressed: () {}),
           ],
+        ),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTaskHeader(),
+              SizedBox(height: 24),
+              _buildTaskDetails(),
+              SizedBox(height: 24),
+              _buildAssignedSection(),
+              SizedBox(height: 24),
+              _buildSubtasksSection(),
+              SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );
@@ -419,7 +428,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               final index = _subtasks.indexOf(subtask);
               if (index != -1) {
                 _subtasks[index] = _subtasks[index].copyWith(
-                  status: value ?? false ? 'Completed' : 'In Progress',
+                  status: value ?? false ? 'completed' : 'In Progress',
+                );
+                updateSubTaskStatus(
+                  widget.task.id ?? '',
+                  index,
+                  value == true ? 'completed' : 'In Progress',
                 );
               }
             });
@@ -487,7 +501,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           ],
         ),
         onTap: () {
-          // Show subtask details or edit dialog
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SubtaskDetailScreen(subtask: subtask),
+            ),
+          );
         },
       ),
     );
@@ -715,7 +734,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               },
             ),
             ElevatedButton(
-              child: Text('Add', style: TextStyle(color: Colors.white)),
               onPressed: () {
                 setState(() {
                   _subtasks.add(
@@ -743,6 +761,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepPurple,
               ),
+              child: Text('Add', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -807,6 +826,38 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         fontSize: 16.0,
       );
       return false;
+    }
+  }
+
+  Future<void> updateSubTaskStatus(
+    String taskId,
+    int index,
+    String status,
+  ) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/api/tasks/$taskId/subtasks/$index/status'),
+      headers: await getAuthHeaders(),
+      body: jsonEncode({'status': status}),
+    );
+
+    if (response.statusCode == 200) {
+      Fluttertoast.showToast(
+        msg: "Update status subtask successfully !",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    } else {
+      Fluttertoast.showToast(
+        msg: "Thêm SubTask thất bại",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
     }
   }
 }

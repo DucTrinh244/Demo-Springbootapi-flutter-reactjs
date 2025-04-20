@@ -344,9 +344,31 @@ class TaskCard extends StatelessWidget {
         0;
 
     return InkWell(
-      onTap: () {
-        Navigator.pushNamed(context, '/task-detail', arguments: task);
+      onTap: () async {
+        final result = await Navigator.pushNamed(
+          context,
+          '/task-detail',
+          arguments: task,
+        );
+
+        if (result == true) {
+          // Fluttertoast.showToast(
+          //   msg: 'reload',
+          //   toastLength: Toast.LENGTH_SHORT,
+          //   gravity: ToastGravity.BOTTOM,
+          //   backgroundColor: Colors.green,
+          //   textColor: Colors.white,
+          // );
+        }
+        // ignore: use_build_context_synchronously
+        if (context.findAncestorStateOfType<_MainTaskScreenState>() != null) {
+          // ignore: use_build_context_synchronously
+          context
+              .findAncestorStateOfType<_MainTaskScreenState>()!
+              ._fetchMyTasks();
+        }
       },
+
       child: Card(
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

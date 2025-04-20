@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-final String baseUrl = 'http://172.16.11.191:8080';
+final String baseUrl = 'http://192.168.1.77:8080';
 
 final Map<String, String> defaultHeaders = {
   'Content-Type': 'application/json; charset=UTF-8',

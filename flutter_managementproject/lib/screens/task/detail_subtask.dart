@@ -3,13 +3,9 @@ import 'package:flutter_managementproject/screens/models/SubTaskModel.dart';
 
 class SubtaskDetailScreen extends StatefulWidget {
   final SubTask subtask;
-  final Function(SubTask) onSubtaskUpdated;
+  // final Function(SubTask) onSubtaskUpdated;
 
-  const SubtaskDetailScreen({
-    super.key,
-    required this.subtask,
-    required this.onSubtaskUpdated,
-  });
+  const SubtaskDetailScreen({super.key, required this.subtask});
 
   @override
   State<SubtaskDetailScreen> createState() => _SubtaskDetailScreenState();
@@ -615,7 +611,7 @@ class _SubtaskDetailScreenState extends State<SubtaskDetailScreen> {
       status: _currentStatus,
     );
 
-    widget.onSubtaskUpdated(updatedSubtask);
+    // widget.onSubtaskUpdated(updatedSubtask);
 
     setState(() {
       _isEditing = false;
