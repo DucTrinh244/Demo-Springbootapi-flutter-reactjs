@@ -21,6 +21,10 @@ import 'package:flutter_managementproject/screens/task/task_detail_screen.dart';
 import 'package:flutter_managementproject/screens/user/profile_screen.dart';
 
 void main() {
+  // WidgetsFlutterBinding.ensureInitialized();
+
+  // // Initialize WebSocket service
+  // WebSocketService().initializeWebSocket(url: '$baseUrl/chat');
   runApp(const MyApp());
 }
 

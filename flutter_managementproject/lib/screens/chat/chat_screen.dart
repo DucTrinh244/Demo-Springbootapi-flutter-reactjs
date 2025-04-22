@@ -1,10 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_managementproject/Services/globals.dart';
 import 'package:flutter_managementproject/screens/chat/group_info_screen.dart';
 import 'package:flutter_managementproject/screens/models/MessageModel.dart';
 import 'package:flutter_managementproject/screens/models/RoomModel.dart';
 import 'package:intl/intl.dart';
+import 'package:stomp_dart_client/stomp.dart';
+import 'package:stomp_dart_client/stomp_config.dart';
+import 'package:stomp_dart_client/stomp_frame.dart';
 
-// Lớp MessageModel đại diện cho một tin nhắn
 class ChatScreen extends StatefulWidget {
   final RoomModel room;
 
@@ -17,34 +22,104 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  StompClient? stompClient;
+  String email = '';
+  bool isConnected = false;
 
-  final String currentUser = 'You'; // Tên người dùng hiện tại
+  @override
+  void initState() {
+    super.initState();
+    _initialize();
+  }
 
-  void _sendMessage() {
-    String msg = _messageController.text.trim();
-    if (msg.isNotEmpty) {
-      setState(() {
-        // Thêm tin nhắn mới vào RoomModel
-        widget.room.messages.add(
-          MessageModel(
-            sender: currentUser,
-            content: msg,
-            timeStamp: DateTime.now(),
-          ),
-        );
-      });
+  @override
+  void dispose() {
+    _messageController.dispose();
+    _scrollController.dispose();
+    _disconnectWebSocket();
+    super.dispose();
+  }
 
-      _messageController.clear();
+  Future<void> _initialize() async {
+    email = await getEmail();
+    setState(() {});
+    _connectToWebSocket();
+  }
 
-      // Cuộn xuống tin mới nhất
-      Future.delayed(const Duration(milliseconds: 100), () {
+  void _connectToWebSocket() {
+    stompClient = StompClient(
+      config: StompConfig.sockJS(
+        url: '$baseUrl/chat',
+        onConnect: _onConnectCallback,
+        onWebSocketError: (error) => print('WebSocket error: $error'),
+        stompConnectHeaders: {'Authorization': 'Bearer ${getToken()}'},
+        webSocketConnectHeaders: {'Authorization': 'Bearer ${getToken()}'},
+      ),
+    );
+    stompClient!.activate();
+  }
+
+  void _disconnectWebSocket() {
+    stompClient?.deactivate();
+  }
+
+  void _onConnectCallback(StompFrame frame) {
+    setState(() => isConnected = true);
+
+    stompClient?.subscribe(
+      destination: '/topic/room/${widget.room.roomId}',
+      callback: (StompFrame frame) {
+        if (frame.body != null) {
+          final message = jsonDecode(frame.body!);
+          _handleNewMessage(message);
+        }
+      },
+    );
+  }
+
+  void _handleNewMessage(dynamic messageData) {
+    final newMessage = MessageModel(
+      sender: messageData['sender'],
+      content: messageData['content'],
+      timeStamp: DateTime.parse(messageData['timeStamp']),
+    );
+
+    setState(() {
+      widget.room.messages.add(newMessage);
+    });
+
+    _scrollToBottom();
+  }
+
+  void _scrollToBottom() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
-      });
-    }
+      }
+    });
+  }
+
+  void _sendMessage() {
+    final msg = _messageController.text.trim();
+    if (msg.isEmpty || !isConnected) return;
+
+    final messageData = {
+      'roomId': widget.room.roomId,
+      'sender': email,
+      'content': msg,
+    };
+
+    stompClient?.send(
+      destination: '/app/sendMessage/${widget.room.roomId}',
+      body: jsonEncode(messageData),
+      headers: {'content-type': 'application/json'},
+    );
+
+    _messageController.clear();
   }
 
   String _formatTime(DateTime time) {
@@ -64,10 +139,7 @@ class _ChatScreenState extends State<ChatScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder:
-                      (context) => GroupInfoScreen(
-                        room: widget.room,
-                      ), // Sử dụng RoomModel
+                  builder: (_) => GroupInfoScreen(room: widget.room),
                 ),
               );
             },
@@ -76,6 +148,18 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Column(
         children: [
+          if (!isConnected)
+            Container(
+              color: Colors.amber[100],
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  Icon(Icons.warning, color: Colors.amber[800]),
+                  const SizedBox(width: 8),
+                  const Text('Đang kết nối đến máy chủ...'),
+                ],
+              ),
+            ),
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
@@ -83,7 +167,7 @@ class _ChatScreenState extends State<ChatScreen> {
               itemCount: widget.room.messages.length,
               itemBuilder: (context, index) {
                 final msg = widget.room.messages[index];
-                final isMe = msg.sender == currentUser;
+                final isMe = msg.sender == email;
 
                 return Align(
                   alignment:
@@ -127,8 +211,6 @@ class _ChatScreenState extends State<ChatScreen> {
               },
             ),
           ),
-
-          // Input tin nhắn
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
@@ -148,7 +230,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     controller: _messageController,
                     textInputAction: TextInputAction.send,
                     decoration: InputDecoration(
-                      hintText: 'Type your message...',
+                      hintText: 'Nhập tin nhắn...',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide.none,
@@ -166,9 +248,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.send),
-                  color: Colors.blueAccent,
+                  color: isConnected ? Colors.blueAccent : Colors.grey,
                   iconSize: 28,
-                  onPressed: _sendMessage,
+                  onPressed: isConnected ? _sendMessage : null,
                 ),
               ],
             ),

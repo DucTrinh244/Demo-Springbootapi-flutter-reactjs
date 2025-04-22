@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_managementproject/Services/globals.dart';
 import 'package:flutter_managementproject/screens/models/RoomModel.dart';
 
 class GroupInfoScreen extends StatelessWidget {
@@ -49,11 +50,23 @@ class GroupInfoScreen extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blueAccent,
-        child: const Icon(Icons.person_add),
-        onPressed: () {
-          // Implement add member functionality
+      floatingActionButton: FutureBuilder<String>(
+        future: getEmail(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const SizedBox.shrink(); // Show nothing while waiting
+          }
+          if (snapshot.hasData && snapshot.data == room.userEmail) {
+            // Show the add member button if the user is the group creator
+            return FloatingActionButton(
+              backgroundColor: Colors.blueAccent,
+              child: const Icon(Icons.person_add),
+              onPressed: () {
+                // Implement add member functionality
+              },
+            );
+          }
+          return const SizedBox.shrink(); // Return an empty widget if condition is not met
         },
       ),
     );
