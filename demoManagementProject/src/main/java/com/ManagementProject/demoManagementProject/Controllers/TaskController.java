@@ -1,6 +1,7 @@
 package com.ManagementProject.demoManagementProject.Controllers;
 
 import com.ManagementProject.demoManagementProject.Models.Task;
+import com.ManagementProject.demoManagementProject.Payload.Request.StatusRequest;
 import com.ManagementProject.demoManagementProject.Payload.Request.SubTaskRequest;
 import com.ManagementProject.demoManagementProject.Payload.Request.TaskRequest;
 import com.ManagementProject.demoManagementProject.Repositories.UserRepository;
@@ -121,6 +122,29 @@ public class TaskController {
         Task updatedTask = taskService.addSubTask(taskId, subTaskRequest);
         if (updatedTask != null) {
             return ResponseEntity.ok(updatedTask);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{taskId}/subtasks/{index}/status")
+    public ResponseEntity<Task> updateSubTaskStatus(
+                @PathVariable String taskId,
+                @PathVariable int index,
+                @RequestBody StatusRequest request) {
+        Task task = taskService.getTaskById(taskId);
+
+        if (task != null && task.getSubtasks() != null && index >= 0 && index < task.getSubtasks().size()) {
+            task.getSubtasks().get(index).setStatus(request.getStatus());
+            taskService.createTask(task, task.getProjectId());
+            if(taskService.checkCompleted(taskId)){
+                task.setStatus("completed");
+                taskService.createTask(task, task.getProjectId());
+            }else{
+                task.setStatus("In Progress");
+                taskService.createTask(task, task.getProjectId());
+            }
+            return ResponseEntity.ok(task);
         } else {
             return ResponseEntity.notFound().build();
         }

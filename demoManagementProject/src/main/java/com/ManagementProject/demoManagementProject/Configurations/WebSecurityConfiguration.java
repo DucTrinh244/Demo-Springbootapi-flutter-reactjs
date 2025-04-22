@@ -38,9 +38,9 @@ public class WebSecurityConfiguration {
                         .requestMatchers(
                                 "/register",
                                 "/authentication",
-                                "/validate-token"
+                                "/validate-token",
 //                                "/api/**",
-//                                "/**"
+                                "/**"
                         ).permitAll()
                         .requestMatchers("/api/**").authenticated()
                 )

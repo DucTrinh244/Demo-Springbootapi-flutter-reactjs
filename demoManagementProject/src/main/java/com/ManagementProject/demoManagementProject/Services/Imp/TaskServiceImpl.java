@@ -72,4 +72,20 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.save(task);
     }
 
+    @Override
+    public Boolean checkCompleted(String taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        // Kiểm tra xem tất cả các subtask đã hoàn thành chưa
+        if (task.getSubtasks() != null) {
+            for (SubTask subTask : task.getSubtasks()) {
+                if (!subTask.getStatus().equals("completed")) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
 }

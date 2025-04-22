@@ -4,16 +4,19 @@ package com.ManagementProject.demoManagementProject.Controllers;
 import com.ManagementProject.demoManagementProject.Models.Message;
 import com.ManagementProject.demoManagementProject.Models.Room;
 import com.ManagementProject.demoManagementProject.Models.User;
+import com.ManagementProject.demoManagementProject.Payload.Request.RoomMemberRequest;
 import com.ManagementProject.demoManagementProject.Payload.Request.RoomRequest;
 import com.ManagementProject.demoManagementProject.Payload.Response.ApiResponse;
 import com.ManagementProject.demoManagementProject.Repositories.RoomRepository;
 import com.ManagementProject.demoManagementProject.Repositories.UserRepository;
+import com.ManagementProject.demoManagementProject.Utils.CurrentUserUtil;
 import com.ManagementProject.demoManagementProject.Utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -49,6 +52,26 @@ public class RoomController {
         room.setRoomName(roomName);
         room.setUserEmail(userEmail);
         room.setMembers(Collections.singletonList(userEmail));
+        Room savedRoom = roomRepository.save(room);
+
+        String updatedRoomId = savedRoom.getId()+"_"+roomName;
+        savedRoom.setRoomId(updatedRoomId);
+        Room updatedRoom = roomRepository.save(savedRoom); // Lưu lại lần nữa
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(updatedRoom);
+    }
+    @PostMapping("add-room-with-member")
+    public ResponseEntity<?> createRoomWithMember(@RequestBody RoomMemberRequest roomMemberRequest) {
+        String email = CurrentUserUtil.getCurrentUserEmail();
+        String roomName = roomMemberRequest.getRoomName();
+        List<String> members = new ArrayList<>();
+        members.add(email); // Thêm email của người tạo vào danh sách thành viên
+        members.addAll(roomMemberRequest.getMembers()); // Thêm các thành viên khác vào danh sách
+        // Tạo room
+        Room room = new Room();
+        room.setRoomName(roomName);
+        room.setUserEmail(email);
+        room.setMembers(members);
         Room savedRoom = roomRepository.save(room);
 
         String updatedRoomId = savedRoom.getId()+"_"+roomName;
@@ -100,16 +123,12 @@ public class RoomController {
 
     }
     @GetMapping("/my-rooms")
-    public ResponseEntity<?> getMyRooms(@RequestHeader("Authorization") String token) {
-        String jwt = token.replace("Bearer ", "");
-        String userEmail = jwtUtil.extractUsername(jwt);
-        List<Room> rooms = roomRepository.findByMembersContaining(userEmail);
-
-        ApiResponse<List<Room>> response = new ApiResponse<>(
-                "success",
-                "Lấy danh sách phòng thành công",
-                rooms
-        );
-        return ResponseEntity.ok(response);
+    public ResponseEntity<List<Room>> getMyRooms() {
+        String email = CurrentUserUtil.getCurrentUserEmail();
+        List<Room> rooms = roomRepository.findByMembersContaining(email);
+        if (rooms.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
+        }
+        return ResponseEntity.ok(rooms);
     }
 }

@@ -17,12 +17,12 @@ import java.util.List;
 @AllArgsConstructor
 public class Room {
     @Id
-    private String id;
-    private String roomId;
-    private String roomName;
-    private String userEmail;
-    private List<Message> messages= new ArrayList<>();
-    private List<String> members= new ArrayList<>();
+        private String id;
+        private String roomId;
+        private String roomName;
+        private String userEmail;
+        private List<Message> messages= new ArrayList<>();
+        private List<String> members= new ArrayList<>();
     public void addMember(String userEmail) {
         this.members.add(userEmail); // Thêm thành viên vào danh sách
     }
