@@ -1,7 +1,10 @@
 package com.ManagementProject.demoManagementProject.Controllers;
 
 import com.ManagementProject.demoManagementProject.Models.Project;
+import com.ManagementProject.demoManagementProject.Models.Task;
+import com.ManagementProject.demoManagementProject.Payload.Response.ProjectResponse;
 import com.ManagementProject.demoManagementProject.Services.ProjectService;
+import com.ManagementProject.demoManagementProject.Services.TaskService;
 import com.ManagementProject.demoManagementProject.Utils.CurrentUserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +22,8 @@ public class ProjectController {
 
     @Autowired
     private ProjectService projectService;
+    @Autowired
+    private TaskService taskService;
 
     // API tạo dự án mới
     @PostMapping
@@ -99,5 +104,21 @@ public class ProjectController {
         }
         return ResponseEntity.ok(projects);
     }
+
+    // get project and task
+    @GetMapping("/project-and-task/{id}")
+    public ResponseEntity<ProjectResponse> getProjectAndTask(@PathVariable String id) {
+        Optional<Project> project = projectService.getProjectById(id);
+        List<Task> task = taskService.getTasksByProjectId(id);
+        if (project.isPresent()) {
+            ProjectResponse projectResponse = new ProjectResponse();
+            projectResponse.setProject(project.get());
+            projectResponse.setTasks(task);
+            return ResponseEntity.ok(projectResponse);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 
 }

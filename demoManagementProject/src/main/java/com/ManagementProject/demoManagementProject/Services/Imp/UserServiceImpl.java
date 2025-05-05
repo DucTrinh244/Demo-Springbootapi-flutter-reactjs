@@ -2,6 +2,7 @@ package com.ManagementProject.demoManagementProject.Services.Imp;
 
 import com.ManagementProject.demoManagementProject.DTOS.UserDTO;
 import com.ManagementProject.demoManagementProject.Models.User;
+import com.ManagementProject.demoManagementProject.Payload.Response.UserResponse;
 import com.ManagementProject.demoManagementProject.Repositories.UserRepository;
 import com.ManagementProject.demoManagementProject.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,21 @@ public class UserServiceImpl implements UserService {
            return null; // Hoặc ném ra một exception tùy ý
         }
         return userRepository.save(user);
+    }
+
+    @Override
+    public UserResponse getUserByEmail(String email) {
+        User u =userRepository.findByEmail(email);
+        UserResponse userResponse = new UserResponse();
+        userResponse.setEmail(u.getEmail());
+        userResponse.setName(u.getName());
+        userResponse.setPhone(u.getPhone());
+
+        if(userResponse==null){
+            return null;
+        }
+        return userResponse;
+
     }
 
 

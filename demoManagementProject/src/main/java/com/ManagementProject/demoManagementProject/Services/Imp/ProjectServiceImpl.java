@@ -3,6 +3,7 @@ package com.ManagementProject.demoManagementProject.Services.Imp;
 import com.ManagementProject.demoManagementProject.Models.Project;
 import com.ManagementProject.demoManagementProject.Repositories.ProjectRepository;
 import com.ManagementProject.demoManagementProject.Repositories.UserRepository;
+import com.ManagementProject.demoManagementProject.Services.MailService;
 import com.ManagementProject.demoManagementProject.Services.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Autowired
     private UserRepository userRepository;  // Dùng để kiểm tra email người dùng tồn tại
+    @Autowired
+    private MailService mailService;
 
     @Override
     public Project createProject(Project project) {
@@ -70,15 +73,20 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public Project addMembersToProject(String projectId, List<String> memberEmails) {
-        for (String email : memberEmails) {
-            if (userRepository.findByEmail(email) == null) {
-                throw new IllegalArgumentException("Email chưa được đăng ký trong hệ thống : " + email);
-            }
-        }
+
 
         Optional<Project> projectOpt = projectRepository.findByProjectId(projectId);
         if (projectOpt.isEmpty()) {
             throw new IllegalArgumentException("Dự án không tồn tại");
+        }
+        for (String email : memberEmails) {
+            if (userRepository.findByEmail(email) == null) {
+                mailService.inviteMemberMail(
+                        email,
+                        projectOpt.get().getProjectName(),
+                        "http://localhost:8080/"
+                        );
+            }
         }
 
         Project project = projectOpt.get();

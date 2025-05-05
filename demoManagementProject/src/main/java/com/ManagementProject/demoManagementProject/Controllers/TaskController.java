@@ -31,31 +31,6 @@ public class TaskController {
     @Autowired
     private UserRepository userRepository;
 
-    // API tạo nhiệm vụ mới, kèm theo projectId
-//    @PostMapping("/{projectId}")
-//    public ResponseEntity<Task> createTask(@RequestBody TaskRequest taskRequest, @PathVariable String projectId) {
-//        if (userRepository.existsByEmail(taskRequest.getAssigneeEmail())) {
-//            return ResponseEntity.status(301).body(null);
-//        }
-//        Task task = new Task();
-//        task.setTaskName(taskRequest.getTaskName());
-//        task.setDescription(taskRequest.getDescription());
-//        task.setAssigneeEmail(taskRequest.getAssigneeEmail());
-//        task.setStartDate(taskRequest.getStartDate());
-//        task.setEndDate(taskRequest.getEndDate());
-//        task.setPriority(taskRequest.getPriority());
-//        task.setStatus(taskRequest.getStatus());
-//        task.setProjectId(projectId);
-//        if (taskRequest.getSubtasks() != null) {
-//            task.setSubtasks(taskRequest.getSubtasks());
-//        }
-//        if(!projectService.isProjectIDExists(projectId))
-//            return ResponseEntity.status(400).body(null); // Trả về lỗi nếu projectId không tồn tại
-//
-//
-//        Task createdTask = taskService.createTask(task, projectId);  // Gửi projectId cho Service
-//        return ResponseEntity.status(200).body(createdTask);
-//    }
     @PostMapping("/{projectId}")
     public ResponseEntity<?> createTask(@RequestBody TaskRequest taskRequest, @PathVariable String projectId) {
 
