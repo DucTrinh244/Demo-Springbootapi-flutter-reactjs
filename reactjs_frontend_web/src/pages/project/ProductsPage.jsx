@@ -3,7 +3,12 @@ import { motion } from "framer-motion";
 import Header from "../../components/common/Header";
 import StatCard from "../../components/common/StatCard";
 
-import { AlertTriangle, Calendar, FileSpreadsheet, TrendingUp } from "lucide-react";
+import {
+  AlertTriangle,
+  Calendar,
+  FileSpreadsheet,
+  TrendingUp,
+} from "lucide-react";
 import CategoryDistributionChart from "../../components/overview/CategoryDistributionChart";
 import MyCreatedProjectTable from "../../components/products/MyCreatedProjectTable";
 import MyProductsTable from "../../components/products/MyProductsTable";
@@ -21,14 +26,34 @@ const ProjectsPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
         >
-          <StatCard name="Total Projects" icon={FileSpreadsheet} value={42} color="#6366F1" />
-          <StatCard name="Completed Projects" icon={TrendingUp} value={18} color="#10B981" />
-          <StatCard name="Overdue Projects" icon={AlertTriangle} value={7} color="#F59E0B" />
-          <StatCard name="Upcoming Deadlines" icon={Calendar} value={12} color="#EF4444" />
+          <StatCard
+            name="Total Projects"
+            icon={FileSpreadsheet}
+            value={42}
+            color="#6366F1"
+          />
+          <StatCard
+            name="Completed Projects"
+            icon={TrendingUp}
+            value={18}
+            color="#10B981"
+          />
+          <StatCard
+            name="Overdue Projects"
+            icon={AlertTriangle}
+            value={7}
+            color="#F59E0B"
+          />
+          <StatCard
+            name="Upcoming Deadlines"
+            icon={Calendar}
+            value={12}
+            color="#EF4444"
+          />
         </motion.div>
 
-        <MyCreatedProjectTable />
         <MyProductsTable />
+        <MyCreatedProjectTable />
 
         {/* CHARTS */}
         <div className="grid grid-col-1 lg:grid-cols-2 gap-8">

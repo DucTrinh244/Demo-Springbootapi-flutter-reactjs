@@ -5,6 +5,7 @@ import {
   CheckSquare,
   Clock,
   Edit2,
+  Eye,
   FileText,
   MessageSquare,
   PlusCircle,
@@ -52,6 +53,8 @@ const ProjectDetailPage = () => {
 
     return dayDifference > 0 ? dayDifference : 0;
   };
+  // const isCreatedProject =
+  //   projectData.projectOwnerId === localStorage.getItem("email");
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -153,11 +156,14 @@ const ProjectDetailPage = () => {
     projectData.endDate
   ).progress;
   const taskCompleted = () => {
-    const tasksucess = taskData.filter((t) => t.status === "completed").length;
-
+    const tasksuccess = taskData.filter((t) => t.status === "completed").length;
     const alltask = taskData.length;
-    return (tasksucess / alltask) * 100;
+
+    const percent = (tasksuccess / alltask) * 100;
+
+    return percent;
   };
+
   const remainingDays = calculateRemainingDays();
 
   const getStatusColor = (status) => {
@@ -195,17 +201,18 @@ const ProjectDetailPage = () => {
             <ArrowLeft className="mr-2" size={20} />
             Back to Projects
           </button>
-
-          <div className="flex space-x-3">
-            <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition flex items-center">
-              <Edit2 className="mr-2" size={18} />
-              Edit Project
-            </button>
-            <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition flex items-center">
-              <Trash className="mr-2" size={18} />
-              Delete
-            </button>
-          </div>
+          {projectData.projectOwnerId === localStorage.getItem("email") && (
+            <div className="flex space-x-3">
+              <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition flex items-center">
+                <Edit2 className="mr-2" size={18} />
+                Edit Project
+              </button>
+              <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition flex items-center">
+                <Trash className="mr-2" size={18} />
+                Delete
+              </button>
+            </div>
+          )}
         </motion.div>
 
         {/* Project Header */}
@@ -344,13 +351,15 @@ const ProjectDetailPage = () => {
                   </div>
                 </div>
               ))}
-              <div
-                className="flex items-center justify-center p-3 rounded-lg bg-gray-700 bg-opacity-20 border border-dashed border-gray-600 cursor-pointer hover:bg-opacity-30 transition"
-                onClick={() => navigate(`/home/projects/${id}/add_member`)}
-              >
-                <PlusCircle className="mr-2 text-gray-400" size={18} />
-                <span className="text-gray-400">Add Member</span>
-              </div>
+              {projectData.projectOwnerId === localStorage.getItem("email") && (
+                <div
+                  className="flex items-center justify-center p-3 rounded-lg bg-gray-700 bg-opacity-20 border border-dashed border-gray-600 cursor-pointer hover:bg-opacity-30 transition"
+                  onClick={() => navigate(`/home/projects/${id}/add_member`)}
+                >
+                  <PlusCircle className="mr-2 text-gray-400" size={18} />
+                  <span className="text-gray-400">Add Member</span>
+                </div>
+              )}
             </div>
           </div>
         </motion.div>
@@ -424,12 +433,7 @@ const ProjectDetailPage = () => {
                         {formatDate(projectData.startDate)}
                       </span>
                     </li>
-                    <li className="flex items-center">
-                      <div className="h-2 w-2 rounded-full bg-blue-500 mr-2"></div>
-                      <span className="text-gray-300">
-                        MVP Development - {formatDate("2025-05-15")}
-                      </span>
-                    </li>
+
                     <li className="flex items-center">
                       <div className="h-2 w-2 rounded-full bg-gray-500 mr-2"></div>
                       <span className="text-gray-300">
@@ -441,24 +445,27 @@ const ProjectDetailPage = () => {
 
                 <div>
                   <h3 className="text-lg font-medium mb-3">Project Status</h3>
-                  <div className="bg-gray-700 rounded-lg p-4 mb-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-gray-300">Tasks Completed</span>
-                      <span className="font-semibold">
-                        {
-                          taskData.filter((t) => t.status === "completed")
-                            .length
-                        }
-                        /{taskData.length}
-                      </span>
+                  {projectData.projectOwnerId ===
+                    localStorage.getItem("email") && (
+                    <div className="bg-gray-700 rounded-lg p-4 mb-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-gray-300">Tasks Completed</span>
+                        <span className="font-semibold">
+                          {
+                            taskData.filter((t) => t.status === "completed")
+                              .length
+                          }
+                          /{taskData.length}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-600 rounded-full h-2.5">
+                        <div
+                          className="bg-blue-500 h-2.5 rounded-full"
+                          style={{ width: `${taskCompleted()}%` }}
+                        ></div>
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-600 rounded-full h-2.5">
-                      <div
-                        className="bg-blue-500 h-2.5 rounded-full"
-                        style={{ width: `${taskCompleted}%` }}
-                      ></div>
-                    </div>
-                  </div>
+                  )}
 
                   <div className="bg-gray-700 rounded-lg p-4 mb-4">
                     <div className="flex justify-between items-center mb-2">
@@ -475,42 +482,47 @@ const ProjectDetailPage = () => {
                     </div>
                   </div>
 
-                  <div className="bg-gray-700 rounded-lg p-4">
-                    <h4 className="font-medium mb-3">Task Distribution</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-300">Completed</span>
-                        <span className="text-sm font-medium">
-                          {
-                            taskData.filter((t) => t.status === "completed")
-                              .length
-                          }
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-300">
-                          In Progress
-                        </span>
-                        <span className="text-sm font-medium">
-                          {
-                            taskData.filter((t) => t.status === "In Progress")
-                              .length
-                          }
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-300">
-                          Not Started
-                        </span>
-                        <span className="text-sm font-medium">
-                          {
-                            taskData.filter((t) => t.status === "Pending")
-                              .length
-                          }
-                        </span>
+                  {projectData.projectOwnerId ===
+                    localStorage.getItem("email") && (
+                    <div className="bg-gray-700 rounded-lg p-4">
+                      <h4 className="font-medium mb-3">Task Distribution</h4>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-300">
+                            Completed
+                          </span>
+                          <span className="text-sm font-medium">
+                            {
+                              taskData.filter((t) => t.status === "completed")
+                                .length
+                            }
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-300">
+                            In Progress
+                          </span>
+                          <span className="text-sm font-medium">
+                            {
+                              taskData.filter((t) => t.status === "In Progress")
+                                .length
+                            }
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-300">
+                            Not Started
+                          </span>
+                          <span className="text-sm font-medium">
+                            {
+                              taskData.filter((t) => t.status === "Pending")
+                                .length
+                            }
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -546,41 +558,56 @@ const ProjectDetailPage = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-700">
-                    {taskData.map((task) => (
-                      <tr key={task.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
-                          {task.taskName}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                          {task.assigneeEmail}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                              task.status
-                            )} bg-opacity-20 border border-opacity-30 ${getStatusColor(
-                              task.status
-                            )}`}
-                          >
-                            {task.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                          <button className="text-indigo-400 hover:text-indigo-300 mr-3 inline-flex items-center">
-                            <Edit2 className="w-4 h-4 mr-1" />
-                            View
-                          </button>
-                          <button className="text-indigo-400 hover:text-indigo-300 mr-3 inline-flex items-center">
-                            <Edit2 className="w-4 h-4 mr-1" />
-                            Edit
-                          </button>
-                          <button className="text-red-400 hover:text-red-300 inline-flex items-center">
-                            <Trash className="w-4 h-4 mr-1" />
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {taskData
+                      .filter((task) => {
+                        // Nếu là chủ dự án → hiển thị tất cả
+                        if (
+                          projectData.projectOwnerId ===
+                          localStorage.getItem("email")
+                        ) {
+                          return true;
+                        }
+
+                        // Nếu không phải chủ dự án → chỉ hiển thị task được phân công
+                        return (
+                          task.assigneeEmail === localStorage.getItem("email")
+                        );
+                      })
+                      .map((task) => (
+                        <tr key={task.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
+                            {task.taskName}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                            {task.assigneeEmail}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                                task.status
+                              )} bg-opacity-20 border border-opacity-30 ${getStatusColor(
+                                task.status
+                              )}`}
+                            >
+                              {task.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                            <button className="text-indigo-400 hover:text-indigo-300 mr-3 inline-flex items-center">
+                              <Eye className="w-4 h-4 mr-1" />
+                              View
+                            </button>
+                            <button className="text-indigo-400 hover:text-indigo-300 mr-3 inline-flex items-center">
+                              <Edit2 className="w-4 h-4 mr-1" />
+                              Edit
+                            </button>
+                            <button className="text-red-400 hover:text-red-300 inline-flex items-center">
+                              <Trash className="w-4 h-4 mr-1" />
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>

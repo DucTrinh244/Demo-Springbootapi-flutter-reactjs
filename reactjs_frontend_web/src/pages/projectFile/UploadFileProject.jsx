@@ -308,7 +308,7 @@ const ProjectFilesManager = () => {
       link.click();
       link.remove();
 
-      toast.success(`Downloading ${fileName} to your device.`);
+      // toast.success(`Downloading ${fileName} to your device.`);
     } catch (error) {
       console.error("Error downloading file:", error);
       toast.error("Failed to download file.");
@@ -681,26 +681,33 @@ const ProjectFilesManager = () => {
                           <td className="px-4 py-3">
                             <div className="flex space-x-2">
                               <button
-                                className="p-1 text-indigo-400 hover:text-indigo-300 transition"
-                                onClick={() => openDescriptionModal(file)}
-                                title="Edit Description"
-                              >
-                                <Edit size={16} />
-                              </button>
-                              <button
                                 className="p-1 text-blue-400 hover:text-blue-300 transition"
                                 onClick={() => downloadFile(file.fileId)}
                                 title="Download"
                               >
                                 <Download size={16} />
                               </button>
-                              <button
-                                className="p-1 text-red-400 hover:text-red-300 transition"
-                                onClick={() => deleteFile(file.fileId)}
-                                title="Delete"
-                              >
-                                <Trash size={16} />
-                              </button>
+
+                              {file.uploadedBy ===
+                                localStorage.getItem("email") && (
+                                <button
+                                  className="p-1 text-indigo-400 hover:text-indigo-300 transition"
+                                  onClick={() => openDescriptionModal(file)}
+                                  title="Edit Description"
+                                >
+                                  <Edit size={16} />
+                                </button>
+                              )}
+                              {file.uploadedBy ===
+                                localStorage.getItem("email") && (
+                                <button
+                                  className="p-1 text-red-400 hover:text-red-300 transition"
+                                  onClick={() => deleteFile(file.fileId)}
+                                  title="Delete"
+                                >
+                                  <Trash size={16} />
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>

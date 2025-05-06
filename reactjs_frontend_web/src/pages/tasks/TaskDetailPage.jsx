@@ -2,9 +2,14 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Calendar,
+  CheckCircle,
+  ChevronDown,
+  ChevronUp,
+  Circle,
   Clock,
   Edit2,
   ListChecks,
+  Loader,
   MessageSquare,
   PaperclipIcon,
   Save,
@@ -27,6 +32,15 @@ const TaskDetailPage = () => {
   const [editedTask, setEditedTask] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const [showAddSubtask, setShowAddSubtask] = useState(false);
+  const [newSubtask, setNewSubtask] = useState({
+    subtaskName: "",
+    description: "",
+    startDate: "",
+    endDate: "",
+    status: "not started",
+    completionPercentage: 0,
+  });
 
   useEffect(() => {
     const fetchTaskDetail = async () => {
@@ -34,29 +48,70 @@ const TaskDetailPage = () => {
         setLoading(true);
         // In a real app, you would fetch the task by ID from your API
         const response = await api.get(`/tasks/${taskId}`);
-        console.log("Task detail:", response.data);
-        setTask(response.data);
-        setEditedTask(response.data);
+        // console.log("Task detail:", response.data);
+
+        // Add subtasks if they don't exist
+        const taskData = response.data;
+        if (!taskData.subtasks) {
+          taskData.subtasks = [
+            {
+              id: "subtask1",
+              subtaskName: "Research UI design trends",
+              description:
+                "Look for the latest UI design trends for web applications",
+              startDate: "2025-04-15",
+              endDate: "2025-04-18",
+              status: "completed",
+              completionPercentage: 100,
+            },
+            {
+              id: "subtask2",
+              subtaskName: "Create wireframes",
+              description: "Design wireframes for desktop and mobile versions",
+              startDate: "2025-04-19",
+              endDate: "2025-04-24",
+              status: "in progress",
+              completionPercentage: 60,
+            },
+            {
+              id: "subtask3",
+              subtaskName: "Prepare style guide",
+              description: "Create comprehensive style guide for developers",
+              startDate: "2025-04-25",
+              endDate: "2025-04-30",
+              status: "not started",
+              completionPercentage: 0,
+            },
+          ];
+        }
+
+        setTask(taskData);
+        setEditedTask(taskData);
 
         // Fetch comments - in a real app, you would have a separate endpoint
         // This is just placeholder data
-        const mockComments = [
-          {
-            id: "comment1",
-            author: "John Doe",
-            authorEmail: "john.doe@example.com",
-            content: "I've started working on this task. Will update soon.",
-            createdAt: "2025-04-25T14:30:00Z",
-          },
-          {
-            id: "comment2",
-            author: "Sarah Miller",
-            authorEmail: "sarah.miller@example.com",
-            content: "Let me know if you need any help with this task.",
-            createdAt: "2025-04-26T09:15:00Z",
-          },
-        ];
-        setComments(mockComments);
+        const responseComment = await api.get(`/comments/${taskId}`);
+        console.log("Task detail:", responseComment.data);
+
+        setComments(responseComment.data);
+        // const mockComments = [
+        //   {
+        //     // id: "comment1",
+        //     // author: "John Doe",
+        //     userEmail: "john.doe@example.com",
+        //     commentText: "I've started working on this task. Will update soon.",
+        //     createdAt: "2025-04-25T14:30:00Z",
+        //   },
+        //   {
+        //     // id: "comment2",
+        //     // author: "Sarah Miller",
+        //     userEmail: "sarah.miller@example.com",
+        //     commentText: "Let me know if you need any help with this task.",
+        //     createdAt: "2025-04-26T09:15:00Z",
+        //   },
+        // ];
+
+        // setComments(mockComments);
 
         setLoading(false);
       } catch (error) {
@@ -79,6 +134,36 @@ const TaskDetailPage = () => {
           projectId: "project1",
           projectName: "Web3 Development Platform",
           completionPercentage: 60,
+          subtasks: [
+            {
+              id: "subtask1",
+              subtaskName: "Research UI design trends",
+              description:
+                "Look for the latest UI design trends for web applications",
+              startDate: "2025-04-15",
+              endDate: "2025-04-18",
+              status: "completed",
+              completionPercentage: 100,
+            },
+            {
+              id: "subtask2",
+              subtaskName: "Create wireframes",
+              description: "Design wireframes for desktop and mobile versions",
+              startDate: "2025-04-19",
+              endDate: "2025-04-24",
+              status: "in progress",
+              completionPercentage: 60,
+            },
+            {
+              id: "subtask3",
+              subtaskName: "Prepare style guide",
+              description: "Create comprehensive style guide for developers",
+              startDate: "2025-04-25",
+              endDate: "2025-04-30",
+              status: "not started",
+              completionPercentage: 0,
+            },
+          ],
           attachments: [
             { id: "att1", name: "wireframe-v1.pdf", size: "2.4 MB" },
             { id: "att2", name: "style-guide.sketch", size: "8.1 MB" },
@@ -183,13 +268,18 @@ const TaskDetailPage = () => {
 
     try {
       // In a real app, you would send the comment to your API
+      const currentUser = await api.get("/users/profile");
       const comment = {
-        id: `comment${comments.length + 1}`,
-        author: "Current User",
-        authorEmail: "current.user@example.com",
-        content: newComment,
+        author: currentUser.data.name,
+        userEmail: currentUser.data.email,
+        commentText: newComment,
         createdAt: new Date().toISOString(),
       };
+      const sendComments = {
+        commentText: newComment,
+      };
+      // Simulate API call
+      await api.post(`/comments/send/${taskId}`, sendComments);
 
       // For demo purposes, we'll just update the UI
       setComments([...comments, comment]);
@@ -198,6 +288,117 @@ const TaskDetailPage = () => {
     } catch (error) {
       console.error("Error adding comment:", error);
       toast.error("Failed to add comment");
+    }
+  };
+
+  const handleSubtaskProgressChange = (subtaskId, newValue) => {
+    // Don't allow values less than 0 or greater than 100
+    const validValue = Math.min(100, Math.max(0, newValue));
+
+    // Create a copy of the task
+    const updatedTask = { ...task };
+
+    // Find the subtask to update
+    const subtaskIndex = updatedTask.subtasks.findIndex(
+      (st) => st.id === subtaskId
+    );
+    if (subtaskIndex >= 0) {
+      // Update progress value
+      updatedTask.subtasks[subtaskIndex].completionPercentage = validValue;
+
+      // Update status based on progress
+      if (validValue === 100) {
+        updatedTask.subtasks[subtaskIndex].status = "completed";
+      } else if (validValue > 0) {
+        updatedTask.subtasks[subtaskIndex].status = "in progress";
+      } else {
+        updatedTask.subtasks[subtaskIndex].status = "not started";
+      }
+
+      // Update task
+      setTask(updatedTask);
+      if (isEditing) {
+        setEditedTask(updatedTask);
+      }
+
+      // Calculate overall task progress based on subtasks
+      const totalSubtasks = updatedTask.subtasks.length;
+      const totalProgress = updatedTask.subtasks.reduce(
+        (sum, subtask) => sum + subtask.completionPercentage,
+        0
+      );
+      const overallProgress = Math.round(totalProgress / totalSubtasks);
+
+      // Update overall task progress
+      updatedTask.completionPercentage = overallProgress;
+
+      // In a real app, you would send this to your API
+      toast.success(`Subtask progress updated to ${validValue}%`);
+    }
+  };
+
+  const handleAddNewSubtask = () => {
+    if (!newSubtask.subtaskName.trim()) {
+      toast.error("Subtask name is required");
+      return;
+    }
+
+    const updatedTask = { ...task };
+    const newSubtaskWithId = {
+      ...newSubtask,
+      id: `subtask${Date.now()}`, // Generate a unique ID
+    };
+
+    updatedTask.subtasks = [...(updatedTask.subtasks || []), newSubtaskWithId];
+
+    setTask(updatedTask);
+    if (isEditing) {
+      setEditedTask(updatedTask);
+    }
+
+    // Reset form
+    setNewSubtask({
+      subtaskName: "",
+      description: "",
+      startDate: "",
+      endDate: "",
+      status: "not started",
+      completionPercentage: 0,
+    });
+    setShowAddSubtask(false);
+
+    toast.success("Subtask added successfully");
+  };
+
+  const handleDeleteSubtask = (subtaskId) => {
+    const updatedTask = { ...task };
+    updatedTask.subtasks = updatedTask.subtasks.filter(
+      (st) => st.id !== subtaskId
+    );
+
+    setTask(updatedTask);
+    if (isEditing) {
+      setEditedTask(updatedTask);
+    }
+
+    toast.success("Subtask deleted");
+  };
+
+  const handleEditSubtask = (subtaskId) => {
+    // This would open a modal or form for editing a specific subtask
+    // For this example, we'll just show a toast
+    toast.info("Edit subtask functionality would open here");
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status.toLowerCase()) {
+      case "completed":
+        return <CheckCircle className="text-green-500" size={20} />;
+      case "in progress":
+        return <Loader className="text-blue-500 animate-spin" size={20} />;
+      case "not started":
+      default:
+        return <Circle className="text-gray-500" size={20} />;
     }
   };
 
@@ -380,7 +581,7 @@ const TaskDetailPage = () => {
             {task.completionPercentage !== undefined && (
               <div className="mb-6">
                 <h2 className="text-lg font-semibold text-white mb-2">
-                  Progress
+                  Overall Progress
                 </h2>
                 <div className="w-full bg-gray-700 rounded-full h-4">
                   <div
@@ -395,7 +596,6 @@ const TaskDetailPage = () => {
             )}
 
             {/* Subtasks Section */}
-
             <div className="mb-8">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-semibold text-white flex items-center">
@@ -404,79 +604,223 @@ const TaskDetailPage = () => {
                 </h2>
                 <button
                   className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-                  onClick={() => {
-                    /* Handle add subtask */
-                  }}
+                  onClick={() => setShowAddSubtask(!showAddSubtask)}
                 >
-                  Add Subtask
+                  {showAddSubtask ? (
+                    <>
+                      <ChevronUp className="mr-1 inline" size={16} />
+                      Hide Form
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="mr-1 inline" size={16} />
+                      Add Subtask
+                    </>
+                  )}
                 </button>
               </div>
-              {task.subtasks && task.subtasks.length > 0 && (
+
+              {/* Add Subtask Form */}
+              {showAddSubtask && (
+                <div className="bg-gray-700 bg-opacity-50 rounded-lg p-4 border border-gray-600 mb-4">
+                  <h3 className="text-white font-medium mb-3">New Subtask</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-1">
+                        Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={newSubtask.subtaskName}
+                        onChange={(e) =>
+                          setNewSubtask({
+                            ...newSubtask,
+                            subtaskName: e.target.value,
+                          })
+                        }
+                        className="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter subtask name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-1">
+                        Description
+                      </label>
+                      <textarea
+                        value={newSubtask.description}
+                        onChange={(e) =>
+                          setNewSubtask({
+                            ...newSubtask,
+                            description: e.target.value,
+                          })
+                        }
+                        className="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 h-20 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter description"
+                      ></textarea>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          Start Date
+                        </label>
+                        <input
+                          type="date"
+                          value={newSubtask.startDate}
+                          onChange={(e) =>
+                            setNewSubtask({
+                              ...newSubtask,
+                              startDate: e.target.value,
+                            })
+                          }
+                          className="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          End Date
+                        </label>
+                        <input
+                          type="date"
+                          value={newSubtask.endDate}
+                          onChange={(e) =>
+                            setNewSubtask({
+                              ...newSubtask,
+                              endDate: e.target.value,
+                            })
+                          }
+                          className="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end mt-3">
+                      <button
+                        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition mr-2"
+                        onClick={() => setShowAddSubtask(false)}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition"
+                        onClick={handleAddNewSubtask}
+                      >
+                        Add Subtask
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Subtasks List */}
+              {task.subtasks && task.subtasks.length > 0 ? (
                 <ul className="space-y-3">
                   {task.subtasks.map((subtask) => (
                     <li
-                      key={subtask.subtaskName}
-                      className="flex items-center justify-between bg-gray-700 bg-opacity-50 rounded-lg p-4 border border-gray-600"
+                      key={subtask.id}
+                      className="bg-gray-700 bg-opacity-50 rounded-lg p-4 border border-gray-600"
                     >
-                      <div className="flex items-center flex-1">
-                        <input
-                          type="checkbox"
-                          checked={subtask.status === "completed"}
-                          readOnly
-                          className="mr-3 w-5 h-5 text-blue-500 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
-                        />
-                        <div>
-                          <Link
-                            to={`/subtask/${encodeURIComponent(
-                              subtask.subtaskName
-                            )}`}
-                            className={`text-white hover:underline ${
-                              subtask.status === "completed"
-                                ? "line-through text-gray-400"
-                                : ""
-                            }`}
-                          >
-                            {subtask.subtaskName}
-                          </Link>
-                          <div className="text-sm text-gray-300 mt-1">
-                            <p>{subtask.description || "No description"}</p>
-                            <p>
-                              Start:{" "}
-                              {subtask.startDate
-                                ? new Date(
-                                    subtask.startDate
-                                  ).toLocaleDateString()
-                                : "N/A"}
-                              {" | "}
-                              End:{" "}
-                              {subtask.endDate
-                                ? new Date(subtask.endDate).toLocaleDateString()
-                                : "N/A"}
-                            </p>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center flex-1">
+                          <div className="mr-3">
+                            {getStatusIcon(subtask.status)}
+                          </div>
+                          <div className="flex-1">
+                            <Link
+                              to={`/subtask/${encodeURIComponent(subtask.id)}`}
+                              className={`text-white hover:underline font-medium ${
+                                subtask.status === "completed"
+                                  ? "line-through text-gray-400"
+                                  : ""
+                              }`}
+                            >
+                              {subtask.subtaskName}
+                            </Link>
+                            {subtask.description && (
+                              <p className="text-sm text-gray-300 mt-1">
+                                {subtask.description}
+                              </p>
+                            )}
                           </div>
                         </div>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            className="text-blue-400 hover:text-blue-300"
+                            onClick={() => handleEditSubtask(subtask.id)}
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button
+                            className="text-red-400 hover:text-red-300"
+                            onClick={() => handleDeleteSubtask(subtask.id)}
+                          >
+                            <Trash size={16} />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex space-x-2">
-                        <button
-                          className="text-blue-400 hover:text-blue-300"
-                          onClick={() => {
-                            /* Handle edit subtask */
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="text-red-400 hover:text-red-300"
-                          onClick={() => {
-                            /* Handle delete subtask */
-                          }}
-                        >
-                          Delete
-                        </button>
+
+                      {/* Dates */}
+                      <div className="text-xs text-gray-400 mb-3 flex">
+                        <div className="flex items-center mr-4">
+                          <Calendar className="mr-1" size={12} />
+                          {subtask.startDate
+                            ? new Date(subtask.startDate).toLocaleDateString()
+                            : "No start date"}
+                          {" - "}
+                          {subtask.endDate
+                            ? new Date(subtask.endDate).toLocaleDateString()
+                            : "No end date"}
+                        </div>
+                        {calculateRemainingDays(subtask.endDate) > 0 && (
+                          <div className="flex items-center">
+                            <Clock className="mr-1" size={12} />
+                            {calculateRemainingDays(subtask.endDate)} days
+                            remaining
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="mt-2">
+                        <div className="flex justify-between text-xs text-gray-400 mb-1">
+                          <span>Progress</span>
+                          <span>{subtask.completionPercentage}%</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-full bg-gray-800 rounded-full h-2 mr-3">
+                            <div
+                              className={`${
+                                subtask.status === "completed"
+                                  ? "bg-green-500"
+                                  : subtask.completionPercentage > 0
+                                  ? "bg-blue-500"
+                                  : "bg-gray-600"
+                              } h-2 rounded-full`}
+                              style={{
+                                width: `${subtask.completionPercentage}%`,
+                              }}
+                            ></div>
+                          </div>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={subtask.completionPercentage}
+                            onChange={(e) =>
+                              handleSubtaskProgressChange(
+                                subtask.id,
+                                parseInt(e.target.value) || 0
+                              )
+                            }
+                            className="w-16 bg-gray-800 text-white border border-gray-600 rounded px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
                       </div>
                     </li>
                   ))}
                 </ul>
+              ) : (
+                <p className="text-gray-400 text-center py-4">
+                  No subtasks yet. Add some to track progress!
+                </p>
               )}
             </div>
 
@@ -508,7 +852,7 @@ const TaskDetailPage = () => {
                               {comment.author}
                             </p>
                             <p className="text-xs text-gray-400">
-                              {comment.authorEmail}
+                              {comment.userEmail}
                             </p>
                           </div>
                         </div>
@@ -516,7 +860,7 @@ const TaskDetailPage = () => {
                           {formatDateTime(comment.createdAt)}
                         </span>
                       </div>
-                      <p className="text-gray-300">{comment.content}</p>
+                      <p className="text-gray-300">{comment.commentText}</p>
                     </div>
                   ))
                 )}

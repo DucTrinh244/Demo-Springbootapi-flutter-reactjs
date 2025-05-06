@@ -1,7 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
   BarChart2,
-  Box,
   DollarSign,
   LogOut,
   Menu,
@@ -24,21 +23,7 @@ const SIDEBAR_ITEMS = [
     href: "/home/products",
   },
   { name: "Tasks", icon: ShoppingBag, color: "#8B5CF6", href: "/home/tasks" },
-  { name: "Resource", icon: Box, color: "#8B5CF6", href: "/home/resource" },
-  { name: "Users", icon: Users, color: "#EC4899", href: "/home/users" },
-  { name: "Sales", icon: DollarSign, color: "#10B981", href: "/home/sales" },
-  {
-    name: "Orders",
-    icon: ShoppingCart,
-    color: "#F59E0B",
-    href: "/home/orders",
-  },
-  {
-    name: "Analytics",
-    icon: TrendingUp,
-    color: "#3B82F6",
-    href: "/home/analytics",
-  },
+  // { name: "Resource", icon: Box, color: "#8B5CF6", href: "/home/resource" },
   {
     name: "Chats",
     icon: MessageCircleCode,
@@ -51,6 +36,22 @@ const SIDEBAR_ITEMS = [
     color: "#6EE7B7",
     href: "/home/settings",
   },
+  { name: "Sales", icon: DollarSign, color: "#10B981", href: "/home/sales" },
+  { name: "Users", icon: Users, color: "#EC4899", href: "/home/users" },
+
+  {
+    name: "Orders",
+    icon: ShoppingCart,
+    color: "#F59E0B",
+    href: "/home/orders",
+  },
+  {
+    name: "Analytics",
+    icon: TrendingUp,
+    color: "#3B82F6",
+    href: "/home/analytics",
+  },
+
   {
     name: "Logout",
     icon: LogOut,

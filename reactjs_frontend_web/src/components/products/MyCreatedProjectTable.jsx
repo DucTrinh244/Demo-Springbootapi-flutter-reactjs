@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Eye, Pencil, Search, Trash2 } from "lucide-react";
+import { Eye, File, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../configs/ApiConfig";
@@ -135,13 +135,13 @@ const MyCreatedProjectTable = () => {
                     <Eye className="w-4 h-4 mr-1" />
                     View
                   </button>
-                  <button className="text-indigo-400 hover:text-indigo-300 mr-3 inline-flex items-center">
-                    <Pencil className="w-4 h-4 mr-1" />
-                    Edit
-                  </button>
-                  <button className="text-red-400 hover:text-red-300 inline-flex items-center">
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    Delete
+
+                  <button
+                    className="text-blue-400 hover:text-blue-300 mr-3 inline-flex items-center"
+                    onClick={() => navigate(`/home/file/${project.projectId}`)}
+                  >
+                    <File className="w-4 h-4 mr-1" />
+                    Files
                   </button>
                 </td>
               </motion.tr>
