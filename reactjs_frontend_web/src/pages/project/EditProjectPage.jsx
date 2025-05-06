@@ -11,7 +11,7 @@ const EditProjectPage = ({ projectId }) => {
     endDate: "",
     priority: "Medium",
     members: [],
-    newMember: ""
+    newMember: "",
   });
 
   const [emailError, setEmailError] = useState("");
@@ -21,7 +21,7 @@ const EditProjectPage = ({ projectId }) => {
     // Here, replace with actual API call to fetch project details by ID
     // Example:
     // fetchProjectDetails(projectId).then((data) => setProject(data));
-    
+
     // Simulating a fetched project for demonstration:
     const fetchedProject = {
       projectName: "Project ABC",
@@ -31,9 +31,9 @@ const EditProjectPage = ({ projectId }) => {
       endDate: "2025-12-31",
       priority: "High",
       members: ["member1@example.com", "member2@example.com"],
-      newMember: ""
+      newMember: "",
     };
-    
+
     setProject(fetchedProject);
   }, [projectId]);
 
@@ -65,7 +65,7 @@ const EditProjectPage = ({ projectId }) => {
     setProject({
       ...project,
       members: [...project.members, email],
-      newMember: ""
+      newMember: "",
     });
     setEmailError("");
   };
@@ -96,12 +96,16 @@ const EditProjectPage = ({ projectId }) => {
           transition={{ duration: 0.8 }}
           className="bg-gradient-to-br from-gray-900 to-gray-800 shadow-xl rounded-xl border border-gray-700 p-8"
         >
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">Edit Project</h2>
+          <h2 className="text-2xl font-bold text-white mb-6 text-center">
+            Edit Project
+          </h2>
 
           <div className="space-y-6">
             {/* Project Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Project Name</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Project Name
+              </label>
               <input
                 type="text"
                 name="projectName"
@@ -115,7 +119,9 @@ const EditProjectPage = ({ projectId }) => {
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Description
+              </label>
               <textarea
                 name="description"
                 rows="3"
@@ -129,7 +135,9 @@ const EditProjectPage = ({ projectId }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Budget */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Budget ($)</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Budget ($)
+                </label>
                 <div className="relative">
                   <span className="absolute left-3 top-3 text-gray-400">$</span>
                   <input
@@ -145,7 +153,9 @@ const EditProjectPage = ({ projectId }) => {
 
               {/* Priority */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Priority</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Priority
+                </label>
                 <select
                   name="priority"
                   value={project.priority}
@@ -163,7 +173,9 @@ const EditProjectPage = ({ projectId }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Start Date */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Start Date</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Start Date
+                </label>
                 <input
                   type="date"
                   name="startDate"
@@ -176,7 +188,9 @@ const EditProjectPage = ({ projectId }) => {
 
               {/* End Date */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">End Date</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  End Date
+                </label>
                 <input
                   type="date"
                   name="endDate"
@@ -190,7 +204,9 @@ const EditProjectPage = ({ projectId }) => {
 
             {/* Team Members (Email) */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Team Members</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Team Members
+              </label>
               <div className="flex">
                 <input
                   type="email"
@@ -199,7 +215,9 @@ const EditProjectPage = ({ projectId }) => {
                   onChange={handleChange}
                   placeholder="Enter member email"
                   className="flex-1 bg-gray-800 text-white rounded-l-lg px-4 py-3 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleMemberAdd())}
+                  onKeyPress={(e) =>
+                    e.key === "Enter" && (e.preventDefault(), handleMemberAdd())
+                  }
                 />
                 <button
                   type="button"
@@ -216,8 +234,8 @@ const EditProjectPage = ({ projectId }) => {
               {/* Display members */}
               <div className="mt-3 flex flex-wrap gap-2">
                 {project.members.map((member, index) => (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className="flex items-center bg-indigo-900 bg-opacity-50 text-white px-3 py-2 rounded-full border border-indigo-700"
                   >
                     <span className="max-w-xs truncate">{member}</span>
