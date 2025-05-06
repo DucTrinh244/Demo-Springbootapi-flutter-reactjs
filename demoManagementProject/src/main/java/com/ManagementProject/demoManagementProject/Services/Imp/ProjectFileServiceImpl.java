@@ -6,6 +6,7 @@ import com.ManagementProject.demoManagementProject.Repositories.ProjectRepositor
 import com.ManagementProject.demoManagementProject.Repositories.UserRepository;
 import com.ManagementProject.demoManagementProject.Services.ProjectFileService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,7 +38,7 @@ public class ProjectFileServiceImpl implements ProjectFileService {
 
 
     @Override
-    public ProjectFile storeFile(MultipartFile file, String projectId, String uploadedBy) {
+    public ProjectFile storeFile(MultipartFile file, String projectId, String uploadedBy, String folder, String description) {
 
         // Lưu file vào hệ thống
         String fileName = file.getOriginalFilename();
@@ -67,6 +68,8 @@ public class ProjectFileServiceImpl implements ProjectFileService {
         projectFile.setProjectId(projectId);
         projectFile.setFileName(fileName);
         projectFile.setFilePath(filePath);
+        projectFile.setFolder(folder);
+        projectFile.setDescription(description);
         projectFile.setFileType(file.getContentType());
         projectFile.setUploadedBy(uploadedBy);
         projectFile.setUploadedAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
@@ -77,15 +80,25 @@ public class ProjectFileServiceImpl implements ProjectFileService {
 
     @Override
     public Boolean ProjectIdExists(String projectId) {
-
-        // Kiểm tra xem projectId có tồn tại trong MongoDB không
-        return projectFileRepository.existsByProjectId(projectId);
+        if(projectRepository.existsByProjectId(projectId))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     @Override
     public List<ProjectFile> getFilesByProjectId(String projectId) {
         return projectFileRepository.findByProjectId(projectId);
+    }
 
+    @Override
+    public ProjectFile getFileById(String fileId) {
+        return projectFileRepository.findById(fileId)
+                .orElseThrow(() -> new RuntimeException("File not found"));
     }
 
 

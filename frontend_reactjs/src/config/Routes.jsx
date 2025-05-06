@@ -2,15 +2,15 @@ import React from "react";
 import { Route, Routes } from "react-router";
 import App from "../App";
 import AddUserPage from "../pages/AddUserPage";
+import AnalyticsPage from "../pages/AnalyticsPage";
 import HomePage from "../pages/HomePage";
+import OrdersPage from "../pages/OrdersPage";
+import OverviewPage from "../pages/OverviewPage";
+import ProductsPage from "../pages/ProductsPage";
+import SalesPage from "../pages/SalesPage";
+import SettingsPage from "../pages/SettingsPage";
 import UserListPage from "../pages/UserListPage";
-import AnalyticsPage from "./pages/AnalyticsPage";
-import OrdersPage from "./pages/OrdersPage";
-import OverviewPage from "./pages/OverviewPage";
-import ProductsPage from "./pages/ProductsPage";
-import SalesPage from "./pages/SalesPage";
-import SettingsPage from "./pages/SettingsPage";
-import UsersPage from "./pages/UsersPage";
+import UsersPage from "../pages/UsersPage";
 const AppRoutes = () => {
   return (
     <Routes>

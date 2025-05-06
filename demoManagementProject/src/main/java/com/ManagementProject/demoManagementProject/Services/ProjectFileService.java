@@ -9,8 +9,10 @@ public interface ProjectFileService {
     // Define the methods that will be implemented in the service class
 
 
-    ProjectFile storeFile(MultipartFile file,String projectId, String uploadedBy);
+    ProjectFile storeFile(MultipartFile file,String projectId, String uploadedBy, String folder,String description);
 
     Boolean ProjectIdExists(String projectId);
     public List<ProjectFile> getFilesByProjectId(String projectId);
+
+    ProjectFile getFileById(String fileId);
 }
