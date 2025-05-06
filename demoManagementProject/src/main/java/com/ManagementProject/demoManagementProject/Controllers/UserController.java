@@ -30,6 +30,7 @@ public class UserController {
         String email = CurrentUserUtil.getCurrentUserEmail();
         return userService.getUserByEmail(email);
     }
+
 //    @PutMapping("/profile")
 //    public UserResponse updateCurrentUser() {
 //        String email = CurrentUserUtil.getCurrentUserEmail();

@@ -88,4 +88,20 @@ public class TaskServiceImpl implements TaskService {
         return true;
     }
 
+    @Override
+    public Boolean checkSendMailInTask(String taskId, String email) {
+
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+        Project project = projectRepository.findByProjectId(task.getProjectId())
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        // Kiểm tra xem email có phải là người được giao nhiệm vụ không
+        if (task.getAssigneeEmail().equals(email) || project.getProjectOwnerId().equals(email)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }

@@ -28,7 +28,7 @@ public class ProjectController {
     // API tạo dự án mới
     @PostMapping
     public ResponseEntity<Project> createProject(@RequestBody Project project) {
-        String email = CurrentUserUtil.getCurrentUserEmail();
+            String email = CurrentUserUtil.getCurrentUserEmail();
         project.setProjectOwnerId(email);
 
         // Xử lý tránh null pointer

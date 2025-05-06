@@ -18,4 +18,7 @@ public interface TaskService {
     List<Task> getTasksByAssigneeEmail(String email);
     Task addSubTask(String taskId, SubTaskRequest subTaskRequest) ;
     Boolean checkCompleted(String taskId) ;
+
+    Boolean checkSendMailInTask(String taskId, String email) ;
+
 }
