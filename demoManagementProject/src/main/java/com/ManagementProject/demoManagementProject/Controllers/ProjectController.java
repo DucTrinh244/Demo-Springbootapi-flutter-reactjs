@@ -3,6 +3,7 @@ package com.ManagementProject.demoManagementProject.Controllers;
 import com.ManagementProject.demoManagementProject.Models.Project;
 import com.ManagementProject.demoManagementProject.Models.Task;
 import com.ManagementProject.demoManagementProject.Payload.Response.ProjectResponse;
+import com.ManagementProject.demoManagementProject.Payload.Response.SummaryProjectResponse;
 import com.ManagementProject.demoManagementProject.Services.ProjectService;
 import com.ManagementProject.demoManagementProject.Services.TaskService;
 import com.ManagementProject.demoManagementProject.Utils.CurrentUserUtil;
@@ -11,9 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
 @RestController
@@ -118,6 +117,11 @@ public class ProjectController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+    @GetMapping("/summary")
+    public ResponseEntity<SummaryProjectResponse> getProjectSummary() {
+        String email = CurrentUserUtil.getCurrentUserEmail();
+        return ResponseEntity.ok(projectService.getProjectSummary(email));
     }
 
 

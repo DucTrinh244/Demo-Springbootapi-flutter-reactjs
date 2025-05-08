@@ -104,4 +104,16 @@ public class TaskServiceImpl implements TaskService {
         }
     }
 
+    @Override
+    public int CountAllTaskWithStatus(String email, String status) {
+        List<Task> tasks = taskRepository.findByAssigneeEmail(email);
+        int count = 0;
+        for(Task task : tasks) {
+            if(task.getStatus().equals(status)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
 }

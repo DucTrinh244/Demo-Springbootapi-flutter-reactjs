@@ -1,6 +1,7 @@
 package com.ManagementProject.demoManagementProject.Services.Imp;
 
 import com.ManagementProject.demoManagementProject.Models.Project;
+import com.ManagementProject.demoManagementProject.Payload.Response.SummaryProjectResponse;
 import com.ManagementProject.demoManagementProject.Repositories.ProjectRepository;
 import com.ManagementProject.demoManagementProject.Repositories.UserRepository;
 import com.ManagementProject.demoManagementProject.Services.MailService;
@@ -8,6 +9,8 @@ import com.ManagementProject.demoManagementProject.Services.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -113,4 +116,48 @@ public class ProjectServiceImpl implements ProjectService {
 
         return projectRepository.existsById(projectId);
     }
+
+    @Override
+    public SummaryProjectResponse getProjectSummary(String email) {
+        SummaryProjectResponse summary = new SummaryProjectResponse();
+        List<Project> projects = projectRepository.findByMembersContains(email);
+
+        int totalProjectCompleted = 0;
+        int overdueProjects = 0;
+        int upcomingDeadlines = 0;
+        LocalDate today = LocalDate.now();
+
+        for (Project project : projects) {
+            if ("completed".equalsIgnoreCase(project.getStatus())) {
+                totalProjectCompleted++;
+            }
+
+            // parse date strings to LocalDate
+            LocalDate endDate = null;
+            try {
+                endDate = LocalDate.parse(project.getEndDate()); // format: yyyy-MM-dd
+            } catch (DateTimeParseException e) {
+                // handle parse errors if needed
+                continue;
+            }
+
+            if (!"completed".equalsIgnoreCase(project.getStatus()) && endDate.isBefore(today)) {
+                overdueProjects++;
+            }
+
+            if (!"completed".equalsIgnoreCase(project.getStatus()) && !endDate.isBefore(today) && !endDate.isEqual(today)) {
+                upcomingDeadlines++;
+            }
+        }
+
+        summary.setTotalProjects(projects.size());
+        summary.setCompletedProjects(totalProjectCompleted);
+        summary.setOverdueProjects(overdueProjects);
+        summary.setUpcomingDeadlines(upcomingDeadlines);
+
+        return summary;
+    }
+
+
+
 }

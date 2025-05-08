@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SumaryProjectReponse {
+public class SummaryProjectResponse {
     private int totalProjects;
     private int completedProjects;
     private int overdueProjects;

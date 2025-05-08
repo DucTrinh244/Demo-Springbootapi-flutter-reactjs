@@ -21,4 +21,6 @@ public interface TaskService {
 
     Boolean checkSendMailInTask(String taskId, String email) ;
 
+    int CountAllTaskWithStatus(String email, String status) ;
+
 }
