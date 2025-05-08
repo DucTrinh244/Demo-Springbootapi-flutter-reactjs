@@ -7,7 +7,6 @@ import {
   Edit2,
   Eye,
   FileText,
-  MessageSquare,
   PlusCircle,
   Trash,
   User,
@@ -128,25 +127,6 @@ const ProjectDetailPage = () => {
         assigneeEmail: "David Chen",
       },
     ],
-    discussions: [
-      {
-        id: "disc1",
-        author: "Alex Johnson",
-        avatar: "/api/placeholder/40/40",
-        date: "2025-04-20",
-        content:
-          "We need to reconsider the approach for the authentication system. Any thoughts?",
-        replies: [
-          {
-            id: "reply1",
-            author: "Sarah Miller",
-            avatar: "/api/placeholder/40/40",
-            date: "2025-04-20",
-            content: "I suggest we use OAuth with Web3 wallet integration.",
-          },
-        ],
-      },
-    ],
   };
   const taskData = project.tasks;
   if (!projectData) toast.error("Project not found");
@@ -203,7 +183,10 @@ const ProjectDetailPage = () => {
           </button>
           {projectData.projectOwnerId === localStorage.getItem("email") && (
             <div className="flex space-x-3">
-              <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition flex items-center">
+              <button
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition flex items-center"
+                onClick={() => navigate(`/home/projects/${id}/edit`)}
+              >
                 <Edit2 className="mr-2" size={18} />
                 Edit Project
               </button>
@@ -393,17 +376,6 @@ const ProjectDetailPage = () => {
             <CheckSquare className="mr-2" size={16} />
             Tasks
           </button>
-          <button
-            className={`py-3 px-6 font-medium text-sm transition flex items-center ${
-              activeTab === "discussions"
-                ? "text-blue-500 border-b-2 border-blue-500"
-                : "text-gray-400 hover:text-gray-300"
-            }`}
-            onClick={() => setActiveTab("discussions")}
-          >
-            <MessageSquare className="mr-2" size={16} />
-            Discussions
-          </button>
         </motion.div>
 
         {/* Tab Content */}
@@ -533,10 +505,16 @@ const ProjectDetailPage = () => {
             <div className="bg-gray-800 bg-opacity-50 backdrop-blur-md rounded-xl p-6 border border-gray-700">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold">Project Tasks</h2>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center">
-                  <PlusCircle className="mr-2" size={18} />
-                  Add Task
-                </button>
+                {projectData.projectOwnerId ===
+                  localStorage.getItem("email") && (
+                  <button
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center"
+                    onClick={() => navigate(`/home/tasks/add`)}
+                  >
+                    <PlusCircle className="mr-2" size={18} />
+                    Add Task
+                  </button>
+                )}
               </div>
 
               <div className="overflow-x-auto">
@@ -613,85 +591,6 @@ const ProjectDetailPage = () => {
               </div>
             </div>
           )}
-
-          {/* Discussions Tab */}
-          {/* {activeTab === "discussions" && (
-            <div className="bg-gray-800 bg-opacity-50 backdrop-blur-md rounded-xl p-6 border border-gray-700">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold">Project Discussions</h2>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center">
-                  <PlusCircle className="mr-2" size={18} />
-                  New Discussion
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                {projectData.discussions.map((discussion) => (
-                  <div
-                    key={discussion.id}
-                    className="border border-gray-700 rounded-lg p-4"
-                  >
-                    <div className="flex items-start">
-                      <img
-                        src={discussion.avatar}
-                        alt={discussion.author}
-                        className="h-10 w-10 rounded-full mr-4"
-                      />
-                      <div className="flex-1">
-                        <div className="flex justify-between">
-                          <h3 className="font-medium text-white">
-                            {discussion.author}
-                          </h3>
-                          <span className="text-sm text-gray-400">
-                            {formatDate(discussion.date)}
-                          </span>
-                        </div>
-                        <p className="text-gray-300 mt-2">
-                          {discussion.content}
-                        </p>
-
-                        <div className="mt-4 pl-6 border-l border-gray-700 space-y-4">
-                          {discussion.replies.map((reply) => (
-                            <div key={reply.id} className="flex items-start">
-                              <img
-                                src={reply.avatar}
-                                alt={reply.author}
-                                className="h-8 w-8 rounded-full mr-3"
-                              />
-                              <div>
-                                <div className="flex items-center">
-                                  <h4 className="font-medium text-white text-sm">
-                                    {reply.author}
-                                  </h4>
-                                  <span className="text-xs text-gray-400 ml-2">
-                                    {formatDate(reply.date)}
-                                  </span>
-                                </div>
-                                <p className="text-gray-300 text-sm mt-1">
-                                  {reply.content}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="mt-4 flex items-center">
-                          <input
-                            type="text"
-                            placeholder="Add a reply..."
-                            className="bg-gray-700 text-white placeholder-gray-400 rounded-lg px-4 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                          <button className="bg-blue-600 hover:bg-blue-700 text-white ml-2 px-4 py-2 rounded-lg transition">
-                            Reply
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )} */}
         </motion.div>
       </main>
     </div>

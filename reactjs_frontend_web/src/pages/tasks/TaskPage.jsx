@@ -1,14 +1,5 @@
 import { motion } from "framer-motion";
-import {
-  Calendar,
-  CheckSquare,
-  Clock,
-  Edit2,
-  FileText,
-  Filter,
-  PlusCircle,
-  Trash,
-} from "lucide-react";
+import { Calendar, CheckSquare, Clock, FileText, Filter } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -161,13 +152,6 @@ const TaskPage = () => {
           transition={{ duration: 0.3 }}
         >
           <h1 className="text-2xl font-bold text-white">Task Management</h1>
-
-          <div className="flex space-x-3">
-            <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition flex items-center">
-              <PlusCircle className="mr-2" size={18} />
-              Create Task
-            </button>
-          </div>
         </motion.div>
 
         {/* Task Status Summary */}
@@ -360,16 +344,11 @@ const TaskPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       <div className="flex space-x-2">
                         <button
-                          className="p-1 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500 hover:bg-opacity-20 rounded"
+                          className="text-blue-400 hover:text-blue-300 mr-3 inline-flex items-center"
                           onClick={() => navigate(`/home/tasks/${task.id}`)}
                         >
                           <FileText className="w-4 h-4" />
-                        </button>
-                        <button className="p-1 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500 hover:bg-opacity-20 rounded">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button className="p-1 text-red-400 hover:text-red-300 hover:bg-red-500 hover:bg-opacity-20 rounded">
-                          <Trash className="w-4 h-4" />
+                          View Details
                         </button>
                       </div>
                     </td>

@@ -1,8 +1,11 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../components/common/Header";
+import api from "../../configs/ApiConfig";
 
-const EditProjectPage = ({ projectId }) => {
+const EditProjectPage = () => {
   const [project, setProject] = useState({
     projectName: "",
     description: "",
@@ -13,29 +16,32 @@ const EditProjectPage = ({ projectId }) => {
     members: [],
     newMember: "",
   });
-
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [emailError, setEmailError] = useState("");
+  const { id } = useParams();
+  const navigate = useNavigate();
 
   // Fetch existing project data using the projectId when the page loads
   useEffect(() => {
-    // Here, replace with actual API call to fetch project details by ID
-    // Example:
-    // fetchProjectDetails(projectId).then((data) => setProject(data));
-
-    // Simulating a fetched project for demonstration:
-    const fetchedProject = {
-      projectName: "Project ABC",
-      description: "This is a sample project.",
-      budget: "5000",
-      startDate: "2025-05-01",
-      endDate: "2025-12-31",
-      priority: "High",
-      members: ["member1@example.com", "member2@example.com"],
-      newMember: "",
+    const fetchProjectData = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get(`/projects/${id}`);
+        setProject({
+          ...response.data,
+          newMember: "", // Ensure newMember is initialized
+        });
+        setLoading(false);
+      } catch (err) {
+        console.error("Failed to fetch project details:", err);
+        setError("Failed to load project data. Please try again later.");
+        setLoading(false);
+      }
     };
 
-    setProject(fetchedProject);
-  }, [projectId]);
+    fetchProjectData();
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -76,13 +82,38 @@ const EditProjectPage = ({ projectId }) => {
     setProject({ ...project, members: updatedMembers });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const projectData = { ...project };
-    delete projectData.newMember; // Remove temporary field before submission
-    console.log("Updated Project:", projectData);
-    // TODO: Update the project on the server or state management system
+    try {
+      const projectData = { ...project };
+      delete projectData.newMember; // Remove temporary field before submission
+
+      const response = await api.put(`/projects/${id}`, projectData);
+      if (response.status === 200) {
+        navigate(`/home/projects/${id}/detail`);
+        toast.success("Project updated successfully!");
+      }
+    } catch (err) {
+      console.error("Error updating project:", err);
+      alert("Failed to update project. Please try again.");
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-white">Loading project data...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-red-400">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-auto relative">
@@ -215,9 +246,12 @@ const EditProjectPage = ({ projectId }) => {
                   onChange={handleChange}
                   placeholder="Enter member email"
                   className="flex-1 bg-gray-800 text-white rounded-l-lg px-4 py-3 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                  onKeyPress={(e) =>
-                    e.key === "Enter" && (e.preventDefault(), handleMemberAdd())
-                  }
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleMemberAdd();
+                    }
+                  }}
                 />
                 <button
                   type="button"

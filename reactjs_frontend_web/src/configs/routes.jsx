@@ -21,6 +21,7 @@ import AddFile from "../pages/projectFile/AddFile";
 import UploadFileProject from "../pages/projectFile/UploadFileProject";
 import ResourcePage from "../pages/resources/ResourcePage";
 import SalesPage from "../pages/SalesPage";
+import AddTaskPage from "../pages/tasks/AddTaskPage";
 import TaskDetailPage from "../pages/tasks/TaskDetailPage";
 import TaskPage from "../pages/tasks/TaskPage";
 import EditProfilePage from "../pages/user/EditProfilePage";
@@ -41,7 +42,7 @@ const AppRoutes = () => {
           <Route path="projects/:id/add_member" element={<AddMemberPage />} />
           {/* Tasks */}
           <Route path="tasks" element={<TaskPage />} />
-          <Route path="tasks/add" element={<TaskPage />} />
+          <Route path="tasks/add" element={<AddTaskPage />} />
           <Route path="tasks/:taskId" element={<TaskDetailPage />} />
           <Route path="tasks/:taskId/edit" element={<TaskPage />} />
           {/* Resource */}

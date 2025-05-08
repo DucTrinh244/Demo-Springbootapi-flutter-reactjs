@@ -9,11 +9,27 @@ import {
   FileSpreadsheet,
   TrendingUp,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import CategoryDistributionChart from "../../components/overview/CategoryDistributionChart";
 import MyCreatedProjectTable from "../../components/products/MyCreatedProjectTable";
 import MyProductsTable from "../../components/products/MyProductsTable";
 import SalesTrendChart from "../../components/products/SalesTrendChart";
+import api from "../../configs/ApiConfig";
 const ProjectsPage = () => {
+  const [summaryProject, setSummaryProject] = useState([]);
+
+  useEffect(() => {
+    const fetchSummaryProject = async () => {
+      try {
+        const response = await api.get("/projects/summary"); // Gọi API để lấy danh sách dự án
+        setSummaryProject(response.data); // Cập nhật danh sách dự án
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      }
+    };
+    fetchSummaryProject(); // Gọi hàm khi component được mount
+  }, []);
+
   return (
     <div className="flex-1 overflow-auto relative z-10">
       <Header title="Projects" />
@@ -29,25 +45,25 @@ const ProjectsPage = () => {
           <StatCard
             name="Total Projects"
             icon={FileSpreadsheet}
-            value={42}
+            value={summaryProject.totalProjects}
             color="#6366F1"
           />
           <StatCard
             name="Completed Projects"
             icon={TrendingUp}
-            value={18}
+            value={summaryProject.completedProjects}
             color="#10B981"
           />
           <StatCard
             name="Overdue Projects"
             icon={AlertTriangle}
-            value={7}
+            value={summaryProject.overdueProjects}
             color="#F59E0B"
           />
           <StatCard
             name="Upcoming Deadlines"
             icon={Calendar}
-            value={12}
+            value={summaryProject.upcomingDeadlines}
             color="#EF4444"
           />
         </motion.div>

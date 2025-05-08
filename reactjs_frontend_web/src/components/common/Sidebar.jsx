@@ -1,15 +1,11 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
   BarChart2,
-  DollarSign,
   LogOut,
   Menu,
   MessageCircleCode,
   Settings,
   ShoppingBag,
-  ShoppingCart,
-  TrendingUp,
-  Users,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
@@ -36,21 +32,21 @@ const SIDEBAR_ITEMS = [
     color: "#6EE7B7",
     href: "/home/settings",
   },
-  { name: "Sales", icon: DollarSign, color: "#10B981", href: "/home/sales" },
-  { name: "Users", icon: Users, color: "#EC4899", href: "/home/users" },
+  // { name: "Sales", icon: DollarSign, color: "#10B981", href: "/home/sales" },
+  // { name: "Users", icon: Users, color: "#EC4899", href: "/home/users" },
 
-  {
-    name: "Orders",
-    icon: ShoppingCart,
-    color: "#F59E0B",
-    href: "/home/orders",
-  },
-  {
-    name: "Analytics",
-    icon: TrendingUp,
-    color: "#3B82F6",
-    href: "/home/analytics",
-  },
+  // {
+  //   name: "Orders",
+  //   icon: ShoppingCart,
+  //   color: "#F59E0B",
+  //   href: "/home/orders",
+  // },
+  // {
+  //   name: "Analytics",
+  //   icon: TrendingUp,
+  //   color: "#3B82F6",
+  //   href: "/home/analytics",
+  // },
 
   {
     name: "Logout",

@@ -7,14 +7,11 @@ import {
   ChevronUp,
   Circle,
   Clock,
-  Edit2,
   ListChecks,
   Loader,
   MessageSquare,
   PaperclipIcon,
-  Save,
   Trash,
-  UserPlus,
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -28,8 +25,6 @@ const TaskDetailPage = () => {
   const { taskId } = useParams();
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedTask, setEditedTask] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [showAddSubtask, setShowAddSubtask] = useState(false);
@@ -38,7 +33,7 @@ const TaskDetailPage = () => {
     description: "",
     startDate: "",
     endDate: "",
-    status: "not started",
+    status: "pending",
     completionPercentage: 0,
   });
 
@@ -79,14 +74,13 @@ const TaskDetailPage = () => {
               description: "Create comprehensive style guide for developers",
               startDate: "2025-04-25",
               endDate: "2025-04-30",
-              status: "not started",
+              status: "pending",
               completionPercentage: 0,
             },
           ];
         }
 
         setTask(taskData);
-        setEditedTask(taskData);
 
         // Fetch comments - in a real app, you would have a separate endpoint
         // This is just placeholder data
@@ -94,24 +88,6 @@ const TaskDetailPage = () => {
         console.log("Task detail:", responseComment.data);
 
         setComments(responseComment.data);
-        // const mockComments = [
-        //   {
-        //     // id: "comment1",
-        //     // author: "John Doe",
-        //     userEmail: "john.doe@example.com",
-        //     commentText: "I've started working on this task. Will update soon.",
-        //     createdAt: "2025-04-25T14:30:00Z",
-        //   },
-        //   {
-        //     // id: "comment2",
-        //     // author: "Sarah Miller",
-        //     userEmail: "sarah.miller@example.com",
-        //     commentText: "Let me know if you need any help with this task.",
-        //     createdAt: "2025-04-26T09:15:00Z",
-        //   },
-        // ];
-
-        // setComments(mockComments);
 
         setLoading(false);
       } catch (error) {
@@ -160,7 +136,7 @@ const TaskDetailPage = () => {
               description: "Create comprehensive style guide for developers",
               startDate: "2025-04-25",
               endDate: "2025-04-30",
-              status: "not started",
+              status: "pending",
               completionPercentage: 0,
             },
           ],
@@ -173,7 +149,6 @@ const TaskDetailPage = () => {
           updatedAt: "2025-04-22T14:30:00Z",
         };
         setTask(mockTask);
-        setEditedTask(mockTask);
         setLoading(false);
       }
     };
@@ -217,7 +192,6 @@ const TaskDetailPage = () => {
       case "in progress":
         return "bg-blue-500";
       case "pending":
-      case "not started":
         return "bg-gray-500";
       case "delayed":
         return "bg-yellow-500";
@@ -239,28 +213,6 @@ const TaskDetailPage = () => {
       default:
         return "bg-gray-500";
     }
-  };
-
-  const handleSaveChanges = async () => {
-    try {
-      // In a real app, you would send the updated task to your API
-      const response = await api.put(`/tasks/${taskId}`, editedTask);
-      console.log("Task updated:", response.data);
-      setTask(editedTask);
-      setIsEditing(false);
-      toast.success("Task updated successfully");
-    } catch (error) {
-      console.error("Error updating task:", error);
-      toast.error("Failed to update task");
-      // For demo purposes, we'll still update the UI
-      setTask(editedTask);
-      setIsEditing(false);
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditedTask(task);
-    setIsEditing(false);
   };
 
   const handleAddComment = async () => {
@@ -291,49 +243,64 @@ const TaskDetailPage = () => {
     }
   };
 
-  const handleSubtaskProgressChange = (subtaskId, newValue) => {
-    // Don't allow values less than 0 or greater than 100
-    const validValue = Math.min(100, Math.max(0, newValue));
+  const handleSubtaskStatusChange = async (subtaskId, newStatus, index) => {
+    try {
+      // Create a copy of the task
+      const updatedTask = { ...task };
 
-    // Create a copy of the task
-    const updatedTask = { ...task };
-
-    // Find the subtask to update
-    const subtaskIndex = updatedTask.subtasks.findIndex(
-      (st) => st.id === subtaskId
-    );
-    if (subtaskIndex >= 0) {
-      // Update progress value
-      updatedTask.subtasks[subtaskIndex].completionPercentage = validValue;
-
-      // Update status based on progress
-      if (validValue === 100) {
-        updatedTask.subtasks[subtaskIndex].status = "completed";
-      } else if (validValue > 0) {
-        updatedTask.subtasks[subtaskIndex].status = "in progress";
-      } else {
-        updatedTask.subtasks[subtaskIndex].status = "not started";
-      }
-
-      // Update task
-      setTask(updatedTask);
-      if (isEditing) {
-        setEditedTask(updatedTask);
-      }
-
-      // Calculate overall task progress based on subtasks
-      const totalSubtasks = updatedTask.subtasks.length;
-      const totalProgress = updatedTask.subtasks.reduce(
-        (sum, subtask) => sum + subtask.completionPercentage,
-        0
+      // Find the subtask to update
+      const subtaskIndex = updatedTask.subtasks.findIndex(
+        (st) => st.id === subtaskId
       );
-      const overallProgress = Math.round(totalProgress / totalSubtasks);
 
-      // Update overall task progress
-      updatedTask.completionPercentage = overallProgress;
+      if (subtaskIndex >= 0) {
+        // Update status and completion percentage based on new status
+        updatedTask.subtasks[subtaskIndex].status = newStatus;
 
-      // In a real app, you would send this to your API
-      toast.success(`Subtask progress updated to ${validValue}%`);
+        // Set completion percentage based on status
+        switch (newStatus.toLowerCase()) {
+          case "completed":
+            updatedTask.subtasks[subtaskIndex].completionPercentage = 100;
+            break;
+          case "in progress":
+            updatedTask.subtasks[subtaskIndex].completionPercentage = 50;
+            break;
+          case "pending":
+            updatedTask.subtasks[subtaskIndex].completionPercentage = 0;
+            break;
+          default:
+            break;
+        }
+
+        // Update task
+        setTask(updatedTask);
+
+        // Calculate overall task progress based on subtasks
+        const totalSubtasks = updatedTask.subtasks.length;
+        const totalProgress = updatedTask.subtasks.reduce(
+          (sum, subtask) => sum + subtask.completionPercentage,
+          0
+        );
+        const overallProgress = Math.round(totalProgress / totalSubtasks);
+
+        // Update overall task progress
+        updatedTask.completionPercentage = overallProgress;
+        const updatedTaskData = {
+          status: newStatus,
+        };
+
+        // In a real app, you would send this to your API
+        await api.put(
+          `/tasks/${taskId}/subtasks/${index}/status`,
+          updatedTaskData
+        );
+        // For now, simulate API call delay
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        toast.success(`Subtask status updated to ${newStatus}`);
+      }
+    } catch (error) {
+      console.error("Error updating subtask status:", error);
+      toast.error("Failed to update subtask status");
     }
   };
 
@@ -352,9 +319,6 @@ const TaskDetailPage = () => {
     updatedTask.subtasks = [...(updatedTask.subtasks || []), newSubtaskWithId];
 
     setTask(updatedTask);
-    if (isEditing) {
-      setEditedTask(updatedTask);
-    }
 
     // Reset form
     setNewSubtask({
@@ -362,7 +326,7 @@ const TaskDetailPage = () => {
       description: "",
       startDate: "",
       endDate: "",
-      status: "not started",
+      status: "pending",
       completionPercentage: 0,
     });
     setShowAddSubtask(false);
@@ -377,18 +341,15 @@ const TaskDetailPage = () => {
     );
 
     setTask(updatedTask);
-    if (isEditing) {
-      setEditedTask(updatedTask);
-    }
 
     toast.success("Subtask deleted");
   };
 
-  const handleEditSubtask = (subtaskId) => {
-    // This would open a modal or form for editing a specific subtask
-    // For this example, we'll just show a toast
-    toast.info("Edit subtask functionality would open here");
-  };
+  // const handleEditSubtask = (subtaskId) => {
+  //   // This would open a modal or form for editing a specific subtask
+  //   // For this example, we'll just show a toast
+  //   toast.info("Edit subtask functionality would open here");
+  // };
 
   const getStatusIcon = (status) => {
     switch (status.toLowerCase()) {
@@ -396,7 +357,7 @@ const TaskDetailPage = () => {
         return <CheckCircle className="text-green-500" size={20} />;
       case "in progress":
         return <Loader className="text-blue-500 animate-spin" size={20} />;
-      case "not started":
+      case "pending":
       default:
         return <Circle className="text-gray-500" size={20} />;
     }
@@ -439,9 +400,9 @@ const TaskDetailPage = () => {
     <div className="flex-1 overflow-auto relative z-10">
       <Header title="Task Detail" />
       <main className="max-w-7xl mx-auto py-6 px-4 lg:px-8">
-        {/* Back button and actions */}
+        {/* Back button */}
         <motion.div
-          className="flex justify-between items-center mb-6"
+          className="mb-6"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
@@ -453,41 +414,6 @@ const TaskDetailPage = () => {
             <ArrowLeft className="mr-2" size={18} />
             Back to Tasks
           </button>
-
-          <div className="flex space-x-3">
-            {isEditing ? (
-              <>
-                <button
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition flex items-center"
-                  onClick={handleSaveChanges}
-                >
-                  <Save className="mr-2" size={18} />
-                  Save Changes
-                </button>
-                <button
-                  className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition flex items-center"
-                  onClick={handleCancelEdit}
-                >
-                  <X className="mr-2" size={18} />
-                  Cancel
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition flex items-center"
-                  onClick={() => setIsEditing(true)}
-                >
-                  <Edit2 className="mr-2" size={18} />
-                  Edit Task
-                </button>
-                <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition flex items-center">
-                  <Trash className="mr-2" size={18} />
-                  Delete
-                </button>
-              </>
-            )}
-          </div>
         </motion.div>
 
         {/* Task Details */}
@@ -499,25 +425,9 @@ const TaskDetailPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            {isEditing ? (
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-400 mb-1">
-                  Task Name
-                </label>
-                <input
-                  type="text"
-                  value={editedTask.taskName}
-                  onChange={(e) =>
-                    setEditedTask({ ...editedTask, taskName: e.target.value })
-                  }
-                  className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            ) : (
-              <h1 className="text-2xl font-bold text-white mb-6">
-                {task.taskName}
-              </h1>
-            )}
+            <h1 className="text-2xl font-bold text-white mb-6">
+              {task.taskName}
+            </h1>
 
             <div className="flex flex-wrap gap-4 mb-6">
               <div className="flex items-center">
@@ -560,25 +470,12 @@ const TaskDetailPage = () => {
               <h2 className="text-lg font-semibold text-white mb-2">
                 Description
               </h2>
-              {isEditing ? (
-                <textarea
-                  value={editedTask.description}
-                  onChange={(e) =>
-                    setEditedTask({
-                      ...editedTask,
-                      description: e.target.value,
-                    })
-                  }
-                  className="w-full h-40 bg-gray-700 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                ></textarea>
-              ) : (
-                <p className="text-gray-300 whitespace-pre-wrap">
-                  {task.description}
-                </p>
-              )}
+              <p className="text-gray-300 whitespace-pre-wrap">
+                {task.description}
+              </p>
             </div>
 
-            {task.completionPercentage !== undefined && (
+            {task.status == "completed" && (
               <div className="mb-6">
                 <h2 className="text-lg font-semibold text-white mb-2">
                   Overall Progress
@@ -586,11 +483,24 @@ const TaskDetailPage = () => {
                 <div className="w-full bg-gray-700 rounded-full h-4">
                   <div
                     className="bg-blue-500 h-4 rounded-full"
-                    style={{ width: `${task.completionPercentage}%` }}
+                    style={{
+                      width: `${
+                        task.status.toLowerCase() === "completed"
+                          ? 100
+                          : task.status.toLowerCase() === "in progress"
+                          ? 50
+                          : 0
+                      }%`,
+                    }}
                   ></div>
                 </div>
                 <div className="text-right text-sm text-gray-400 mt-1">
-                  {task.completionPercentage}% Complete
+                  {task.status.toLowerCase() === "completed"
+                    ? 100
+                    : task.status.toLowerCase() === "in progress"
+                    ? 50
+                    : 0}
+                  % Complete
                 </div>
               </div>
             )}
@@ -713,7 +623,7 @@ const TaskDetailPage = () => {
               {/* Subtasks List */}
               {task.subtasks && task.subtasks.length > 0 ? (
                 <ul className="space-y-3">
-                  {task.subtasks.map((subtask) => (
+                  {task.subtasks.map((subtask, index) => (
                     <li
                       key={subtask.id}
                       className="bg-gray-700 bg-opacity-50 rounded-lg p-4 border border-gray-600"
@@ -742,12 +652,12 @@ const TaskDetailPage = () => {
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <button
+                          {/* <button
                             className="text-blue-400 hover:text-blue-300"
                             onClick={() => handleEditSubtask(subtask.id)}
                           >
                             <Edit2 size={16} />
-                          </button>
+                          </button> */}
                           <button
                             className="text-red-400 hover:text-red-300"
                             onClick={() => handleDeleteSubtask(subtask.id)}
@@ -778,40 +688,93 @@ const TaskDetailPage = () => {
                         )}
                       </div>
 
-                      {/* Progress Bar */}
-                      <div className="mt-2">
-                        <div className="flex justify-between text-xs text-gray-400 mb-1">
-                          <span>Progress</span>
-                          <span>{subtask.completionPercentage}%</span>
+                      {/* Status Buttons */}
+                      <div className="mt-3">
+                        <div className="flex justify-between text-xs text-gray-400 mb-2">
+                          <span>Status</span>
+                          <span>
+                            {subtask.status.toLowerCase() === "completed"
+                              ? 100
+                              : subtask.status.toLowerCase() === "in progress"
+                              ? 50
+                              : 0}
+                            % Complete
+                          </span>
                         </div>
-                        <div className="flex items-center">
-                          <div className="w-full bg-gray-800 rounded-full h-2 mr-3">
-                            <div
-                              className={`${
-                                subtask.status === "completed"
-                                  ? "bg-green-500"
-                                  : subtask.completionPercentage > 0
-                                  ? "bg-blue-500"
-                                  : "bg-gray-600"
-                              } h-2 rounded-full`}
-                              style={{
-                                width: `${subtask.completionPercentage}%`,
-                              }}
-                            ></div>
-                          </div>
-                          <input
-                            type="number"
-                            min="0"
-                            max="100"
-                            value={subtask.completionPercentage}
-                            onChange={(e) =>
-                              handleSubtaskProgressChange(
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() =>
+                              handleSubtaskStatusChange(
                                 subtask.id,
-                                parseInt(e.target.value) || 0
+                                "pending",
+                                index
                               )
                             }
-                            className="w-16 bg-gray-800 text-white border border-gray-600 rounded px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
+                            className={`py-1 px-3 rounded-md text-xs font-medium transition-colors ${
+                              subtask.status.toLowerCase() === "pending"
+                                ? "bg-gray-600 text-white"
+                                : "bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white"
+                            }`}
+                          >
+                            Pending
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleSubtaskStatusChange(
+                                subtask.id,
+                                "in progress",
+                                index
+                              )
+                            }
+                            className={`py-1 px-3 rounded-md text-xs font-medium transition-colors ${
+                              subtask.status.toLowerCase() === "in progress"
+                                ? "bg-blue-600 text-white"
+                                : "bg-gray-700 text-gray-400 hover:bg-blue-600 hover:text-white"
+                            }`}
+                          >
+                            In Progress
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleSubtaskStatusChange(
+                                subtask.id,
+                                "completed",
+                                index
+                              )
+                            }
+                            className={`py-1 px-3 rounded-md text-xs font-medium transition-colors ${
+                              subtask.status.toLowerCase() === "completed"
+                                ? "bg-green-600 text-white"
+                                : "bg-gray-700 text-gray-400 hover:bg-green-600 hover:text-white"
+                            }`}
+                          >
+                            Completed
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="mt-2">
+                        <div className="w-full bg-gray-800 rounded-full h-2 mt-2">
+                          <div
+                            className={`${
+                              subtask.status.toLowerCase() === "completed"
+                                ? "bg-green-500"
+                                : subtask.status.toLowerCase() === "in progress"
+                                ? "bg-blue-500"
+                                : "bg-gray-600"
+                            } h-2 rounded-full transition-all duration-300`}
+                            style={{
+                              width: `${
+                                subtask.status.toLowerCase() === "completed"
+                                  ? 100
+                                  : subtask.status.toLowerCase() ===
+                                    "in progress"
+                                  ? 50
+                                  : 0
+                              }%`,
+                            }}
+                          ></div>
                         </div>
                       </div>
                     </li>
@@ -885,6 +848,8 @@ const TaskDetailPage = () => {
             </div>
           </motion.div>
 
+          {/* Sidebar with additional information
+
           {/* Sidebar with additional information */}
           <motion.div
             className="col-span-1 space-y-6"
@@ -925,13 +890,6 @@ const TaskDetailPage = () => {
                   <p className="text-sm text-gray-400">{task.assigneeEmail}</p>
                 </div>
               </div>
-
-              {isEditing && (
-                <button className="flex items-center text-indigo-400 hover:text-indigo-300 text-sm">
-                  <UserPlus className="mr-1" size={16} />
-                  Change Assignee
-                </button>
-              )}
             </div>
 
             {/* Dates & Timeline */}
@@ -940,67 +898,24 @@ const TaskDetailPage = () => {
                 Timeline
               </h2>
 
-              {isEditing ? (
-                <>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-400 mb-1">
-                      Start Date
-                    </label>
-                    <input
-                      type="date"
-                      value={editedTask.startDate}
-                      onChange={(e) =>
-                        setEditedTask({
-                          ...editedTask,
-                          startDate: e.target.value,
-                        })
-                      }
-                      className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-400 mb-1">
-                      End Date
-                    </label>
-                    <input
-                      type="date"
-                      value={editedTask.endDate}
-                      onChange={(e) =>
-                        setEditedTask({
-                          ...editedTask,
-                          endDate: e.target.value,
-                        })
-                      }
-                      className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-gray-400">Start Date:</span>
-                    <span className="text-white">
-                      {formatDate(task.startDate)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-gray-400">Due Date:</span>
-                    <span className="text-white">
-                      {formatDate(task.endDate)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Duration:</span>
-                    <span className="text-white">
-                      {Math.ceil(
-                        (new Date(task.endDate) - new Date(task.startDate)) /
-                          (1000 * 60 * 60 * 24)
-                      )}{" "}
-                      days
-                    </span>
-                  </div>
-                </>
-              )}
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-400">Start Date:</span>
+                <span className="text-white">{formatDate(task.startDate)}</span>
+              </div>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-400">Due Date:</span>
+                <span className="text-white">{formatDate(task.endDate)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">Duration:</span>
+                <span className="text-white">
+                  {Math.ceil(
+                    (new Date(task.endDate) - new Date(task.startDate)) /
+                      (1000 * 60 * 60 * 24)
+                  )}{" "}
+                  days
+                </span>
+              </div>
             </div>
 
             {/* Attachments */}
@@ -1029,41 +944,12 @@ const TaskDetailPage = () => {
                   ))}
                 </div>
 
-                {isEditing && (
-                  <button className="mt-4 flex items-center text-indigo-400 hover:text-indigo-300 text-sm">
-                    <PaperclipIcon className="mr-1" size={16} />
-                    Add Attachment
-                  </button>
-                )}
+                <button className="mt-4 flex items-center text-indigo-400 hover:text-indigo-300 text-sm">
+                  <PaperclipIcon className="mr-1" size={16} />
+                  Add Attachment
+                </button>
               </div>
             )}
-
-            {/* Creation/Update Information */}
-            <div className="bg-gray-800 bg-opacity-50 backdrop-blur-md rounded-xl p-6 border border-gray-700">
-              <h2 className="text-lg font-semibold text-white mb-4">
-                Activity
-              </h2>
-              <div className="text-sm space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Created by:</span>
-                  <span className="text-white">
-                    {task.createdBy || "Unknown"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Created on:</span>
-                  <span className="text-white">
-                    {formatDateTime(task.createdAt)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Last updated:</span>
-                  <span className="text-white">
-                    {formatDateTime(task.updatedAt)}
-                  </span>
-                </div>
-              </div>
-            </div>
           </motion.div>
         </div>
       </main>
