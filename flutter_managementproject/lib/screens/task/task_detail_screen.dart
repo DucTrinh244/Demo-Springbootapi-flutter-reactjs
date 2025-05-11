@@ -121,7 +121,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
-            widget.task.status ?? 'In Progress',
+            widget.task.status ?? 'in progress',
             style: TextStyle(
               color: _getStatusTextColor(widget.task.status),
               fontWeight: FontWeight.w500,
@@ -428,12 +428,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               final index = _subtasks.indexOf(subtask);
               if (index != -1) {
                 _subtasks[index] = _subtasks[index].copyWith(
-                  status: value ?? false ? 'completed' : 'In Progress',
+                  status: value ?? false ? 'completed' : 'in progress',
                 );
                 updateSubTaskStatus(
                   widget.task.id ?? '',
                   index,
-                  value == true ? 'completed' : 'In Progress',
+                  value == true ? 'completed' : 'n progress',
                 );
               }
             });

@@ -6,7 +6,7 @@ import 'package:flutter_managementproject/screens/chat/add_room_sreen.dart';
 import 'package:flutter_managementproject/screens/chat/chat_screen.dart';
 import 'package:flutter_managementproject/screens/chat/main_chat_screen.dart';
 import 'package:flutter_managementproject/screens/check/shared_prefs_page.dart';
-import 'package:flutter_managementproject/screens/dashboard_screen.dart';
+import 'package:flutter_managementproject/screens/home_screen.dart';
 import 'package:flutter_managementproject/screens/models/RoomModel.dart';
 import 'package:flutter_managementproject/screens/models/SubTaskModel.dart';
 import 'package:flutter_managementproject/screens/models/TaskModel.dart';
@@ -18,6 +18,7 @@ import 'package:flutter_managementproject/screens/task/add_task_screen.dart';
 import 'package:flutter_managementproject/screens/task/detail_subtask.dart';
 import 'package:flutter_managementproject/screens/task/main_task_screen.dart';
 import 'package:flutter_managementproject/screens/task/task_detail_screen.dart';
+import 'package:flutter_managementproject/screens/user/account_screen.dart';
 import 'package:flutter_managementproject/screens/user/profile_screen.dart';
 
 void main() {
@@ -44,7 +45,8 @@ class MyApp extends StatelessWidget {
       // routes: appRoutes,
       routes: {
         '/profile': (context) => const ProfileScreen(),
-        '/dashboard': (context) => const DashboardScreen(),
+        '/account': (context) => const AccountScreen(),
+        '/dashboard': (context) => const HomeScreen(),
         '/project': (context) => const MainProjectScreen(),
         '/task': (context) => const MainTaskScreen(),
         '/LocalData': (context) => const SharedPrefsPage(),

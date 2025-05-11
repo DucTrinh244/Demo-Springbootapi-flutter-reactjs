@@ -127,28 +127,21 @@ class _MainTaskScreenState extends State<MainTaskScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: IconThemeData(color: Colors.black),
-        title: Row(
-          children: [
-            Icon(Icons.search, color: Colors.black),
-            SizedBox(width: 10),
-            Expanded(
-              child: Text('Search', style: TextStyle(color: Colors.black)),
-            ),
-            CircleAvatar(
-              radius: 20,
-              backgroundImage: NetworkImage(
-                'https://www.w3schools.com/w3images/avatar2.png',
-              ),
-            ),
-            IconButton(
-              icon: Icon(Icons.notifications, color: Colors.black),
-              onPressed: () {},
-            ),
-          ],
+        title: const Text(
+          "Tasks",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
         ),
+        actions: [
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: Colors.indigo.shade100,
+            child: const Icon(Icons.person, color: Colors.indigo),
+          ),
+          const SizedBox(width: 16),
+        ],
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF2D3748),
       ),
       drawer: CustomDrawer(),
       body:
@@ -174,76 +167,8 @@ class _MainTaskScreenState extends State<MainTaskScreen> {
               'Tasks Assigned to Me',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 16),
 
-            // Filter options
-            Row(
-              children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: () {
-                      // Implement filter functionality
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.filter_list,
-                            size: 20,
-                            color: Colors.grey[600],
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            'Filter',
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: InkWell(
-                    onTap: () {
-                      // Implement sort functionality
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.sort, size: 20, color: Colors.grey[600]),
-                          SizedBox(width: 4),
-                          Text(
-                            'Sort',
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            SizedBox(height: 24),
+            SizedBox(height: 18),
 
             // Status categories
             DefaultTabController(
@@ -274,7 +199,8 @@ class _MainTaskScreenState extends State<MainTaskScreen> {
 
                         // In Progress Tasks
                         _buildTasksListFromData(
-                          _getFilteredTasks('In Progress'),
+                          _getFilteredTasks('in progress'),
+                          // In Progress Tasks
                         ),
 
                         // Completed Tasks
