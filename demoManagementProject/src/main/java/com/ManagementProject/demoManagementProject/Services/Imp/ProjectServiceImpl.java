@@ -1,11 +1,14 @@
 package com.ManagementProject.demoManagementProject.Services.Imp;
 
 import com.ManagementProject.demoManagementProject.Models.Project;
+import com.ManagementProject.demoManagementProject.Models.Task;
+import com.ManagementProject.demoManagementProject.Payload.Response.ProgressProjectResponse;
 import com.ManagementProject.demoManagementProject.Payload.Response.SummaryProjectResponse;
 import com.ManagementProject.demoManagementProject.Repositories.ProjectRepository;
 import com.ManagementProject.demoManagementProject.Repositories.UserRepository;
 import com.ManagementProject.demoManagementProject.Services.MailService;
 import com.ManagementProject.demoManagementProject.Services.ProjectService;
+import com.ManagementProject.demoManagementProject.Services.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,8 +29,20 @@ public class ProjectServiceImpl implements ProjectService {
     @Autowired
     private MailService mailService;
 
+    @Autowired
+    private TaskService taskService;
+
     @Override
     public Project createProject(Project project) {
+        for (String email : project.getMembers()) {
+            if (userRepository.findByEmail(email) == null) {
+                mailService.inviteMemberMail(
+                        email,
+                        project.getProjectName(),
+                        "http://localhost:8080/"
+                );
+            }
+        }
         return projectRepository.save(project);
     }
 
@@ -158,6 +173,66 @@ public class ProjectServiceImpl implements ProjectService {
         return summary;
     }
 
+    @Override
+    public ProgressProjectResponse getProjectSummaryId(String projectId) {
+        ProgressProjectResponse summary = new ProgressProjectResponse();
+        Project project = projectRepository.findByProjectId(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+        double progress = 0.0;
+        int totalTask = 0;
+        int completedTask = 0;
+        int overdueTask = 0;
+
+        List<Task> tasks = taskService.getTasksByProjectId(projectId);
+        for (Task task : tasks) {
+            totalTask++;
+            if ("completed".equalsIgnoreCase(task.getStatus())||"Completed".equalsIgnoreCase(task.getStatus())) {
+                completedTask++;
+            }
+            LocalDate endDate = null;
+            try {
+                endDate = LocalDate.parse(task.getEndDate()); // format: yyyy-MM-dd
+            } catch (DateTimeParseException e) {
+                // handle parse errors if needed
+                continue;
+            }
+            if (!"completed".equalsIgnoreCase(task.getStatus()) && endDate.isBefore(LocalDate.now())) {
+                overdueTask++;
+            }
+        }
+        if (totalTask > 0) {
+            progress = ((double) completedTask / totalTask) ;
+        }
+        summary.setProgressPercentage(progress);
+        summary.setTotalTasks(totalTask);
+        summary.setCompletedTasks(completedTask);
+        summary.setOverdueTasks(overdueTask);
+        return summary;
+
+    }
+
+    @Override
+    public void updateStatusProject(String projectId) {
+        boolean isValidStatus = true;
+        Project project = projectRepository.findByProjectId(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+        List<Task> tasks = taskService.getTasksByProjectId(projectId);
+        for (Task task : tasks) {
+            if(task.getStatus().equals("in progress")
+                    ||task.getStatus().equals("In Progress")
+                    ||task.getStatus().equals("Pending")
+                    ||task.getStatus().equals("pending")
+            ) {
+                isValidStatus = false;
+            }
+        }
+        if (isValidStatus) {
+            project.setStatus("completed");
+        } else {
+            project.setStatus("in progress");
+        }
+        projectRepository.save(project);
+    }
 
 
 }

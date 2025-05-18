@@ -1,6 +1,7 @@
 package com.ManagementProject.demoManagementProject.Services;
 
 import com.ManagementProject.demoManagementProject.Models.Project;
+import com.ManagementProject.demoManagementProject.Payload.Response.ProgressProjectResponse;
 import com.ManagementProject.demoManagementProject.Payload.Response.SummaryProjectResponse;
 import com.ManagementProject.demoManagementProject.Repositories.ProjectRepository;
 import com.ManagementProject.demoManagementProject.Repositories.UserRepository;
@@ -35,5 +36,9 @@ public interface ProjectService {
      boolean isProjectIDExists(String projectId);
 
      SummaryProjectResponse getProjectSummary(String email);
+
+     ProgressProjectResponse getProjectSummaryId(String projectId);
+     void updateStatusProject(String projectId) ;
+
 
 }

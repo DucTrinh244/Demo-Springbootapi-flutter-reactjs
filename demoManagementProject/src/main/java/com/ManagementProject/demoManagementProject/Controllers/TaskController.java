@@ -1,5 +1,6 @@
 package com.ManagementProject.demoManagementProject.Controllers;
 
+import com.ManagementProject.demoManagementProject.Models.Project;
 import com.ManagementProject.demoManagementProject.Models.Task;
 import com.ManagementProject.demoManagementProject.Payload.Request.StatusRequest;
 import com.ManagementProject.demoManagementProject.Payload.Request.SubTaskRequest;
@@ -53,7 +54,11 @@ public class TaskController {
         task.setStartDate(taskRequest.getStartDate());
         task.setEndDate(taskRequest.getEndDate());
         task.setPriority(taskRequest.getPriority());
-        task.setStatus(taskRequest.getStatus());
+        if(taskRequest.getStatus() == null) {
+            task.setStatus("pending");
+        } else {
+            task.setStatus(taskRequest.getStatus());
+        }
         task.setProjectId(projectId);
         if (taskRequest.getSubtasks() != null) {
             task.setSubtasks(taskRequest.getSubtasks());
@@ -101,6 +106,26 @@ public class TaskController {
             return ResponseEntity.notFound().build();
         }
     }
+    @PutMapping("/{taskId}/edit")
+    public ResponseEntity<Task> updateTask(@PathVariable String taskId, @RequestBody TaskRequest taskRequest) {
+        Task task = taskService.getTaskById(taskId);
+        if (task != null) {
+            task.setTaskName(taskRequest.getTaskName());
+            task.setDescription(taskRequest.getDescription());
+            task.setAssigneeEmail(taskRequest.getAssigneeEmail());
+            task.setStartDate(taskRequest.getStartDate());
+            task.setEndDate(taskRequest.getEndDate());
+            task.setPriority(taskRequest.getPriority());
+            task.setStatus(taskRequest.getStatus());
+            if (taskRequest.getSubtasks() != null) {
+                task.setSubtasks(taskRequest.getSubtasks());
+            }
+            Task updatedTask = taskService.createTask(task, task.getProjectId());
+            return ResponseEntity.ok(updatedTask);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
     @PutMapping("/{taskId}/subtasks/{index}/status")
     public ResponseEntity<Task> updateSubTaskStatus(
@@ -115,9 +140,12 @@ public class TaskController {
             if(taskService.checkCompleted(taskId)){
                 task.setStatus("completed");
                 taskService.createTask(task, task.getProjectId());
+                projectService.updateStatusProject(task.getProjectId());
             }else{
-                task.setStatus("In Progress");
+                task.setStatus("in progress");
                 taskService.createTask(task, task.getProjectId());
+                projectService.updateStatusProject(task.getProjectId());
+
             }
             return ResponseEntity.ok(task);
         } else {

@@ -2,6 +2,7 @@ package com.ManagementProject.demoManagementProject.Controllers;
 
 import com.ManagementProject.demoManagementProject.Models.Project;
 import com.ManagementProject.demoManagementProject.Models.Task;
+import com.ManagementProject.demoManagementProject.Payload.Response.ProgressProjectResponse;
 import com.ManagementProject.demoManagementProject.Payload.Response.ProjectResponse;
 import com.ManagementProject.demoManagementProject.Payload.Response.SummaryProjectResponse;
 import com.ManagementProject.demoManagementProject.Services.ProjectService;
@@ -39,6 +40,9 @@ public class ProjectController {
         // Tránh thêm trùng email
         if (!members.contains(email)) {
             members.add(email);
+        }
+        if(project.getStatus()==null){
+            project.setStatus("pending");
         }
 
         project.setMembers(members);
@@ -122,6 +126,12 @@ public class ProjectController {
     public ResponseEntity<SummaryProjectResponse> getProjectSummary() {
         String email = CurrentUserUtil.getCurrentUserEmail();
         return ResponseEntity.ok(projectService.getProjectSummary(email));
+    }
+
+    @GetMapping("/summary/{id}")
+    public ResponseEntity<ProgressProjectResponse> getProjectSummaryById(@PathVariable String id) {
+
+        return ResponseEntity.ok(projectService.getProjectSummaryId(id));
     }
 
 
