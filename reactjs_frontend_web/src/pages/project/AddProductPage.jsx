@@ -1,6 +1,9 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import Header from "../../components/common/Header";
+import api from "../../configs/ApiConfig";
 
 const AddProjectPage = () => {
   const [project, setProject] = useState({
@@ -11,8 +14,9 @@ const AddProjectPage = () => {
     endDate: "",
     priority: "Medium",
     members: [],
-    newMember: ""
+    newMember: "",
   });
+  const navigate = useNavigate();
 
   const [emailError, setEmailError] = useState("");
 
@@ -28,23 +32,23 @@ const AddProjectPage = () => {
 
   const handleMemberAdd = () => {
     const email = project.newMember.trim();
-    
+
     if (!email) return;
-    
+
     if (!validateEmail(email)) {
       setEmailError("Please enter a valid email address");
       return;
     }
-    
+
     if (project.members.includes(email)) {
       setEmailError("This email is already added");
       return;
     }
-    
+
     setProject({
       ...project,
       members: [...project.members, email],
-      newMember: ""
+      newMember: "",
     });
     setEmailError("");
   };
@@ -55,12 +59,17 @@ const AddProjectPage = () => {
     setProject({ ...project, members: updatedMembers });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const projectData = { ...project };
     delete projectData.newMember; // Remove temporary field before submission
-    console.log("New Project:", projectData);
-    // TODO: Gửi dữ liệu lên server hoặc cập nhật state chung
+    const response = await api.post("/projects", projectData);
+    if (response.status === 200) {
+      toast.success("Project created successfully");
+      navigate("/home/products");
+    } else {
+      toast.error("Failed to create project");
+    }
   };
 
   return (
@@ -75,12 +84,16 @@ const AddProjectPage = () => {
           transition={{ duration: 0.8 }}
           className="bg-gradient-to-br from-gray-900 to-gray-800 shadow-xl rounded-xl border border-gray-700 p-8"
         >
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">Create New Project</h2>
-          
+          <h2 className="text-2xl font-bold text-white mb-6 text-center">
+            Create New Project
+          </h2>
+
           <div className="space-y-6">
             {/* Project Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Project Name</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Project Name
+              </label>
               <input
                 type="text"
                 name="projectName"
@@ -94,7 +107,9 @@ const AddProjectPage = () => {
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Description
+              </label>
               <textarea
                 name="description"
                 rows="3"
@@ -108,7 +123,9 @@ const AddProjectPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Budget */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Budget ($)</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Budget ($)
+                </label>
                 <div className="relative">
                   <span className="absolute left-3 top-3 text-gray-400">$</span>
                   <input
@@ -124,7 +141,9 @@ const AddProjectPage = () => {
 
               {/* Priority */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Priority</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Priority
+                </label>
                 <select
                   name="priority"
                   value={project.priority}
@@ -142,7 +161,9 @@ const AddProjectPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Start Date */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Start Date</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Start Date
+                </label>
                 <input
                   type="date"
                   name="startDate"
@@ -155,7 +176,9 @@ const AddProjectPage = () => {
 
               {/* End Date */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">End Date</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  End Date
+                </label>
                 <input
                   type="date"
                   name="endDate"
@@ -169,7 +192,9 @@ const AddProjectPage = () => {
 
             {/* Team Members (Email) */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Team Members</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Team Members
+              </label>
               <div className="flex">
                 <input
                   type="email"
@@ -178,7 +203,9 @@ const AddProjectPage = () => {
                   onChange={handleChange}
                   placeholder="Enter member email"
                   className="flex-1 bg-gray-800 text-white rounded-l-lg px-4 py-3 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleMemberAdd())}
+                  onKeyPress={(e) =>
+                    e.key === "Enter" && (e.preventDefault(), handleMemberAdd())
+                  }
                 />
                 <button
                   type="button"
@@ -195,8 +222,8 @@ const AddProjectPage = () => {
               {/* Display members */}
               <div className="mt-3 flex flex-wrap gap-2">
                 {project.members.map((member, index) => (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className="flex items-center bg-indigo-900 bg-opacity-50 text-white px-3 py-2 rounded-full border border-indigo-700"
                   >
                     <span className="max-w-xs truncate">{member}</span>

@@ -26,7 +26,12 @@ const OverviewPage = () => {
       <Header title="Overview" />
 
       <main className="max-w-7xl mx-auto py-6 px-4 lg:px-8">
-        {/* STATS */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <CategoryDistributionChart />
+          <SalesOverviewChart />
+        </div>
+        {/* Add spacing below charts */}
+        <div className="h-8" />
         <motion.div
           className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8"
           initial={{ opacity: 0, y: 20 }}
@@ -84,13 +89,7 @@ const OverviewPage = () => {
             color="#2196F3"
           />
         </motion.div>
-
         {/* CHARTS */}
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <SalesOverviewChart />
-          <CategoryDistributionChart />
-        </div>
       </main>
     </div>
   );

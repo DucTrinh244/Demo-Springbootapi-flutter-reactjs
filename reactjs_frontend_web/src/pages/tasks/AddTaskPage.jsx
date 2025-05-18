@@ -1,8 +1,15 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../components/common/Header";
+import api from "../../configs/ApiConfig";
 
 const AddTaskPage = () => {
+  // Get projectId from URL parameters
+  const { projectId } = useParams();
+  const navigate = useNavigate();
+
   const [task, setTask] = useState({
     taskName: "",
     description: "",
@@ -10,20 +17,28 @@ const AddTaskPage = () => {
     startDate: "",
     endDate: "",
     priority: "Medium",
-    status: "Not Started",
+    status: "pending",
     projectId: "",
     subtasks: [],
     newSubtask: {
       subtaskName: "",
       description: "",
-      assigneeEmail: "",
       startDate: "",
       endDate: "",
-      status: "Not Started",
+      status: "pending",
     },
   });
 
-  const [emailError, setEmailError] = useState("");
+  // Update task with projectId from URL params when component mounts
+  useEffect(() => {
+    if (projectId) {
+      setTask((prevTask) => ({
+        ...prevTask,
+        projectId,
+      }));
+    }
+  }, [projectId]);
+
   const [showSubtaskForm, setShowSubtaskForm] = useState(false);
 
   const handleChange = (e) => {
@@ -39,37 +54,32 @@ const AddTaskPage = () => {
     });
   };
 
-  const validateEmail = (email) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-  };
-
   const handleAddSubtask = () => {
-    const { subtaskName, assigneeEmail } = task.newSubtask;
+    const { subtaskName } = task.newSubtask;
 
     if (!subtaskName.trim()) {
       return;
     }
 
-    if (assigneeEmail && !validateEmail(assigneeEmail)) {
-      setEmailError("Please enter a valid email address");
-      return;
-    }
-
+    // Add the subtask with the main task's assigneeEmail
     setTask({
       ...task,
-      subtasks: [...task.subtasks, { ...task.newSubtask }],
+      subtasks: [
+        ...task.subtasks,
+        {
+          ...task.newSubtask,
+          assigneeEmail: task.assigneeEmail, // Use main task's assigneeEmail
+        },
+      ],
       newSubtask: {
         subtaskName: "",
         description: "",
-        assigneeEmail: "",
         startDate: "",
         endDate: "",
-        status: "Not Started",
+        status: "pending",
       },
     });
 
-    setEmailError("");
     setShowSubtaskForm(false);
   };
 
@@ -79,20 +89,21 @@ const AddTaskPage = () => {
     setTask({ ...task, subtasks: updatedSubtasks });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const taskData = { ...task };
     delete taskData.newSubtask; // Remove temporary field before submission
-    console.log("New Task:", taskData);
-    // TODO: Send data to server or update global state
+    const response = await api.post(`/tasks/${projectId}`, taskData);
+    if (response.status === 200) {
+      // Handle successful task creation
+      toast.success("Add task successfully !"); // Optionally, redirect or show a success message
+      navigate(`/home/projects/${projectId}/detail`);
+    } else {
+      // Handle error
+      console.error("Error creating task:", response.data);
+    }
   };
 
-  const statusOptions = [
-    "Not Started",
-    "In Progress",
-    "Under Review",
-    "Completed",
-  ];
   const priorityOptions = ["Low", "Medium", "High", "Critical"];
 
   return (
@@ -143,58 +154,37 @@ const AddTaskPage = () => {
               ></textarea>
             </div>
 
-            {/* Project ID */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Project
-              </label>
-              <input
-                type="text"
-                name="projectId"
-                required
-                value={task.projectId}
-                onChange={handleChange}
-                className="block w-full bg-gray-800 text-white rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                placeholder="Enter project ID or select from dropdown"
-              />
-              {/* Note: In a real application, this would likely be a dropdown populated with actual projects */}
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Display Project ID (readonly) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Project ID
+                </label>
+                <input
+                  type="text"
+                  value={task.projectId}
+                  readOnly
+                  className="block w-full bg-gray-700 text-gray-300 rounded-lg px-4 py-3 border border-gray-700 focus:outline-none transition cursor-not-allowed"
+                />
+              </div>
 
-            {/* Assignee Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Assignee Email
-              </label>
-              <input
-                type="email"
-                name="assigneeEmail"
-                value={task.assigneeEmail}
-                onChange={handleChange}
-                className="block w-full bg-gray-800 text-white rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                placeholder="Enter assignee email"
-              />
+              {/* Assignee Email - Shared between main task and subtasks */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Assignee Email
+                </label>
+                <input
+                  type="email"
+                  name="assigneeEmail"
+                  value={task.assigneeEmail}
+                  onChange={handleChange}
+                  className="block w-full bg-gray-800 text-white rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                  placeholder="Enter assignee email"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Status */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Status
-                </label>
-                <select
-                  name="status"
-                  value={task.status}
-                  onChange={handleChange}
-                  className="block w-full bg-gray-800 text-white rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                >
-                  {statusOptions.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               {/* Priority */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">
@@ -211,6 +201,23 @@ const AddTaskPage = () => {
                       {priority}
                     </option>
                   ))}
+                </select>
+              </div>
+
+              {/* Status - if needed */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Status
+                </label>
+                <select
+                  name="status"
+                  value={task.status}
+                  onChange={handleChange}
+                  className="block w-full bg-gray-800 text-white rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="completed">Completed</option>
                 </select>
               </div>
             </div>
@@ -312,7 +319,7 @@ const AddTaskPage = () => {
                 </p>
               )}
 
-              {/* Subtask Form */}
+              {/* Subtask Form - Without Assignee Email field */}
               {showSubtaskForm && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
@@ -351,45 +358,6 @@ const AddTaskPage = () => {
                       ></textarea>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">
-                        Assignee Email
-                      </label>
-                      <input
-                        type="email"
-                        name="assigneeEmail"
-                        value={task.newSubtask.assigneeEmail}
-                        onChange={handleSubtaskChange}
-                        className="block w-full bg-gray-700 text-white rounded-lg px-4 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                        placeholder="Enter assignee email"
-                      />
-                      {emailError && (
-                        <p className="mt-1 text-sm text-red-400">
-                          {emailError}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">
-                          Status
-                        </label>
-                        <select
-                          name="status"
-                          value={task.newSubtask.status}
-                          onChange={handleSubtaskChange}
-                          className="block w-full bg-gray-700 text-white rounded-lg px-4 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                        >
-                          {statusOptions.map((status) => (
-                            <option key={status} value={status}>
-                              {status}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
@@ -417,6 +385,32 @@ const AddTaskPage = () => {
                         />
                       </div>
                     </div>
+
+                    {/* Status for subtask */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">
+                        Status
+                      </label>
+                      <select
+                        name="status"
+                        value={task.newSubtask.status}
+                        onChange={handleSubtaskChange}
+                        className="block w-full bg-gray-700 text-white rounded-lg px-4 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                      >
+                        <option value="Not Started">Not Started</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                      </select>
+                    </div>
+
+                    {/* Note about shared assignee */}
+                    {task.assigneeEmail && (
+                      <div className="text-sm text-blue-400 bg-blue-900/30 p-2 rounded border border-blue-800">
+                        <span>
+                          Subtask will be assigned to: {task.assigneeEmail}
+                        </span>
+                      </div>
+                    )}
 
                     <div className="flex justify-end mt-4">
                       <button

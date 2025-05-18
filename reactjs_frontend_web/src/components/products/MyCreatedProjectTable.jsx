@@ -127,7 +127,7 @@ const MyCreatedProjectTable = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                   <button
-                    className="text-blue-400 hover:text-blue-300 mr-3 inline-flex items-center"
+                    className="text-blue-400 hover:tex  t-blue-300 mr-3 inline-flex items-center"
                     onClick={() =>
                       navigate(`/home/projects/${project.projectId}/detail`)
                     }
@@ -143,6 +143,15 @@ const MyCreatedProjectTable = () => {
                     <File className="w-4 h-4 mr-1" />
                     Files
                   </button>
+                  {/* <button
+                    className="text-blue-400 hover:text-blue-300 mr-3 inline-flex items-center"
+                    onClick={() =>
+                      navigate(`/home/projects/${project.projectId}/gantt`)
+                    }
+                  >
+                    <File className="w-4 h-4 mr-1" />
+                    Gantt
+                  </button> */}
                 </td>
               </motion.tr>
             ))}

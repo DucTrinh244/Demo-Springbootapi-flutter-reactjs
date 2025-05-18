@@ -290,9 +290,9 @@ const TaskPage = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Task Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Project
-                  </th>
+                  </th> */}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Assignee
                   </th>
@@ -316,9 +316,9 @@ const TaskPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
                       {task.taskName}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                    {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {task.projectName}
-                    </td>
+                    </td> */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {task.assigneeEmail}
                     </td>

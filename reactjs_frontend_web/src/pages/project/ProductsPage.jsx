@@ -13,7 +13,6 @@ import { useEffect, useState } from "react";
 import CategoryDistributionChart from "../../components/overview/CategoryDistributionChart";
 import MyCreatedProjectTable from "../../components/products/MyCreatedProjectTable";
 import MyProductsTable from "../../components/products/MyProductsTable";
-import SalesTrendChart from "../../components/products/SalesTrendChart";
 import api from "../../configs/ApiConfig";
 const ProjectsPage = () => {
   const [summaryProject, setSummaryProject] = useState([]);
@@ -73,7 +72,7 @@ const ProjectsPage = () => {
 
         {/* CHARTS */}
         <div className="grid grid-col-1 lg:grid-cols-2 gap-8">
-          <SalesTrendChart />
+          {/* <SalesTrendChart /> */}
           <CategoryDistributionChart />
         </div>
       </main>

@@ -1,11 +1,12 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
   BarChart2,
+  Boxes,
+  CheckSquare,
   LogOut,
   Menu,
   MessageCircleCode,
   Settings,
-  ShoppingBag,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
@@ -14,11 +15,16 @@ const SIDEBAR_ITEMS = [
   { name: "Overview", icon: BarChart2, color: "#6366f1", href: "/home" },
   {
     name: "Projects",
-    icon: ShoppingBag,
+    icon: Boxes,
     color: "#8B5CF6",
     href: "/home/products",
   },
-  { name: "Tasks", icon: ShoppingBag, color: "#8B5CF6", href: "/home/tasks" },
+  {
+    name: "Tasks",
+    icon: CheckSquare,
+    color: "#8B5CF6",
+    href: "/home/tasks",
+  },
   // { name: "Resource", icon: Box, color: "#8B5CF6", href: "/home/resource" },
   {
     name: "Chats",

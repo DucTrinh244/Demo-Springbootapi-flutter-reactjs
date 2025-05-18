@@ -1,0 +1,86 @@
+/* Frappe Gantt Base Styles */
+.gantt-container {
+  position: relative;
+  user-select: none;
+  width: 100%;
+}
+
+.gantt-container svg {
+  width: 100%;
+  height: auto;
+}
+
+.gantt-container .grid-row {
+  fill: none;
+  stroke: #e5e7eb;
+  stroke-width: 1;
+}
+
+.gantt-container .grid-header {
+  fill: #111827;
+  font-size: 12px;
+}
+
+.gantt-container .grid-row-column {
+  fill: #9ca3af;
+}
+
+.gantt-container .task-bar {
+  fill: #3b82f6;
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.gantt-container .bar-progress {
+  fill: #10b981;
+}
+
+.gantt-container .dependency-line {
+  fill: none;
+  stroke: #6b7280;
+  stroke-width: 2;
+}
+
+/* Custom Gantt Chart Styles */
+.gantt-container {
+  background-color: #1f2937; /* bg-gray-800 */
+  color: white;
+}
+
+.gantt .grid-row {
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.gantt .grid-header {
+  background-color: #111827; /* bg-gray-900 */
+  color: #d1d5db; /* text-gray-300 */
+}
+
+.gantt .task-bar {
+  border-radius: 0.25rem;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.gantt .task-bar:hover {
+  opacity: 1;
+}
+
+.task-popup {
+  background-color: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  color: white;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+
+.task-popup h3 {
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.task-popup p {
+  color: #9ca3af;
+  margin-bottom: 0.25rem;
+}

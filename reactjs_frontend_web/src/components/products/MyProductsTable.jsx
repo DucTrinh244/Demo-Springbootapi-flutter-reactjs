@@ -100,6 +100,15 @@ const MyProductsTable = () => {
                     <File className="w-4 h-4 mr-1" />
                     Files
                   </button>
+                  {/* <button
+                    className="text-blue-400 hover:text-blue-300 mr-3 inline-flex items-center"
+                    onClick={() =>
+                      navigate(`/home/projects/${project.projectId}/gantt`)
+                    }
+                  >
+                    <File className="w-4 h-4 mr-1" />
+                    Gantt
+                  </button> */}
                 </td>
               </motion.tr>
             ))}

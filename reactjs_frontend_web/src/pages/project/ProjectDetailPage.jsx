@@ -509,7 +509,9 @@ const ProjectDetailPage = () => {
                   localStorage.getItem("email") && (
                   <button
                     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center"
-                    onClick={() => navigate(`/home/tasks/add`)}
+                    onClick={() =>
+                      navigate(`/home/tasks/${projectData.projectId}/add`)
+                    }
                   >
                     <PlusCircle className="mr-2" size={18} />
                     Add Task
@@ -571,18 +573,32 @@ const ProjectDetailPage = () => {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                            <button className="text-indigo-400 hover:text-indigo-300 mr-3 inline-flex items-center">
+                            <button
+                              className="text-indigo-400 hover:text-indigo-300 mr-3 inline-flex items-center"
+                              onClick={() => navigate(`/home/tasks/${task.id}`)}
+                            >
                               <Eye className="w-4 h-4 mr-1" />
                               View
                             </button>
-                            <button className="text-indigo-400 hover:text-indigo-300 mr-3 inline-flex items-center">
-                              <Edit2 className="w-4 h-4 mr-1" />
-                              Edit
-                            </button>
-                            <button className="text-red-400 hover:text-red-300 inline-flex items-center">
-                              <Trash className="w-4 h-4 mr-1" />
-                              Delete
-                            </button>
+                            {projectData.projectOwnerId ===
+                              localStorage.getItem("email") && (
+                              <button
+                                className="text-indigo-400 hover:text-indigo-300 mr-3 inline-flex items-center"
+                                onClick={() =>
+                                  navigate(`/home/tasks/${task.id}/edit`)
+                                }
+                              >
+                                <Edit2 className="w-4 h-4 mr-1" />
+                                Edit
+                              </button>
+                            )}
+                            {projectData.projectOwnerId ===
+                              localStorage.getItem("email") && (
+                              <button className="text-red-400 hover:text-red-300 inline-flex items-center">
+                                <Trash className="w-4 h-4 mr-1" />
+                                Delete
+                              </button>
+                            )}
                           </td>
                         </tr>
                       ))}

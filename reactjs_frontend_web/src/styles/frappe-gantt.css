@@ -1,0 +1,74 @@
+/* Frappe Gantt Library Styles */
+.gantt {
+  color: #ffffff; /* text-white */
+}
+
+.gantt-container {
+  background-color: #1a202c; /* bg-gray-900 */
+  border-radius: 0.5rem; /* rounded-lg */
+}
+
+.gantt .grid-row {
+  border-bottom: 1px solid #4a5568; /* border-b border-gray-700 */
+}
+
+.gantt .grid-header {
+  background-color: #2d3748; /* bg-gray-800 */
+  color: #a0aec0; /* text-gray-300 */
+}
+
+.gantt .grid-row:nth-child(even) {
+  background-color: rgba(45, 55, 72, 0.5); /* bg-gray-800 bg-opacity-50 */
+}
+
+.gantt .task-bar {
+  border-radius: 0.375rem; /* rounded-md */
+  opacity: 0.8; /* opacity-80 */
+  transition: opacity 0.2s; /* transition-opacity */
+}
+
+.gantt .task-bar:hover {
+  opacity: 1; /* hover:opacity-100 */
+}
+
+.gantt .task-bar.completed {
+  background-color: #48bb78; /* bg-green-500 */
+}
+
+.gantt .task-bar.in-progress {
+  background-color: #4299e1; /* bg-blue-500 */
+}
+
+.gantt .task-bar.pending {
+  background-color: #a0aec0; /* bg-gray-500 */
+}
+
+.gantt .lower-text {
+  color: #ffffff; /* text-white */
+  font-size: 0.75rem; /* text-xs */
+}
+
+.gantt .dependency-line {
+  stroke: #63b3ed; /* stroke-blue-400 */
+  stroke-opacity: 0.5; /* stroke-opacity-50 */
+}
+
+/* Custom Popup Styling */
+.popup-content {
+  background-color: #2d3748; /* bg-gray-800 */
+  padding: 1rem; /* p-4 */
+  border-radius: 0.5rem; /* rounded-lg */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* shadow-lg */
+  border: 1px solid #4a5568; /* border border-gray-700 */
+  color: #ffffff; /* text-white */
+}
+
+.popup-content h3 {
+  font-weight: bold; /* font-bold */
+  margin-bottom: 0.5rem; /* mb-2 */
+}
+
+.popup-content p {
+  color: #a0aec0; /* text-gray-300 */
+  margin-bottom: 0.25rem; /* mb-1 */
+}
