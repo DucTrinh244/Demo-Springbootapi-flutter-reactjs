@@ -1,8 +1,93 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_managementproject/Services/globals.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  bool _isLoading = true;
+  String _name = '';
+  String _email = '';
+  String _phone = '';
+
+  // Analytics data
+  int _totalProjects = 0;
+  int _completedProjects = 0;
+  int _totalTasks = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    await Future.wait([_loadProfileData(), _loadAnalyticsData()]);
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _loadProfileData() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/users/profile'),
+        headers: await getAuthHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _name = data['name'] ?? 'No Name';
+          _email = data['email'] ?? 'No Email';
+          _phone = data['phone'] ?? 'No Phone';
+        });
+      } else {
+        // Handle error - could show a snackbar here
+      }
+    } catch (e) {
+      // Handle error - could show a snackbar here
+    }
+  }
+
+  Future<void> _loadAnalyticsData() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/analytics/overview'),
+        headers: await getAuthHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _totalProjects = data['totalProjects'] ?? 0;
+          _completedProjects = data['completedProjects'] ?? 0;
+          _totalTasks = data['totalTasks'] ?? 0;
+        });
+      } else {
+        Fluttertoast.showToast(
+          msg: response.body,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
+    } catch (e) {
+      // Handle error - could show a snackbar here
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,157 +111,191 @@ class ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Profile Header
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 30),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0x0A000000),
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Stack(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.indigo.withOpacity(0.2),
-                              spreadRadius: 4,
-                              blurRadius: 15,
-                              offset: const Offset(0, 8),
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // Profile Header
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 30),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(30),
+                          bottomRight: Radius.circular(30),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Stack(
+                            children: [
+                              CircleAvatar(
+                                radius: 50,
+                                backgroundColor: Colors.grey[200],
+                                child: Text(
+                                  _name.isNotEmpty
+                                      ? _name[0].toUpperCase()
+                                      : '?',
+                                  style: const TextStyle(
+                                    fontSize: 40,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.indigo,
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.indigo,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.camera_alt_outlined,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            _name,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2D3748),
                             ),
-                          ],
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Colors.indigo,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
                           ),
-                          child: const Icon(
-                            Icons.camera_alt_outlined,
-                            color: Colors.white,
-                            size: 18,
+                          const SizedBox(height: 6),
+                          Text(
+                            _email,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF718096),
+                            ),
                           ),
-                        ),
+                          // if (_phone.isNotEmpty) ...[
+                          //   const SizedBox(height: 4),
+                          //   Text(
+                          //     _phone,
+                          //     style: const TextStyle(
+                          //       fontSize: 14,
+                          //       color: Color(0xFF718096),
+                          //     ),
+                          //   ),
+                          // ],
+                          const SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildStatItem(
+                                'Projects',
+                                _totalProjects.toString(),
+                              ),
+                              _buildDivider(),
+                              _buildStatItem('Tasks', _totalTasks.toString()),
+                              _buildDivider(),
+                              _buildStatItem(
+                                'Completed',
+                                _completedProjects.toString(),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'John Doe',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D3748),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'johndoe@example.com',
-                    style: TextStyle(fontSize: 16, color: Color(0xFF718096)),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildStatItem('Projects', '12'),
-                      _buildDivider(),
-                      _buildStatItem('Tasks', '34'),
-                      _buildDivider(),
-                      _buildStatItem('Completed', '27'),
-                    ],
-                  ),
-                ],
+
+                    const SizedBox(height: 25),
+
+                    // Profile Menu Section
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.only(left: 8, bottom: 8),
+                            child: Text(
+                              'Account Settings',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF2D3748),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          _buildMenuCard(
+                            icon: Icons.person_outline,
+                            iconColor: Colors.indigo,
+                            title: 'Personal Information',
+                            subtitle: 'Update your profile details',
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                '/account',
+                                arguments: {
+                                  'name': _name,
+                                  'email': _email,
+                                  'phone': _phone,
+                                },
+                              );
+                            },
+                          ),
+
+                          _buildMenuCard(
+                            icon: Icons.lock_outline,
+                            iconColor: Colors.blue,
+                            title: 'Password & Security',
+                            subtitle: 'Change password and security settings',
+                            onTap: () {
+                              // Navigate to security settings
+                            },
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          const Padding(
+                            padding: EdgeInsets.only(left: 8, bottom: 8),
+                            child: Text(
+                              'Other',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF2D3748),
+                              ),
+                            ),
+                          ),
+
+                          _buildLogoutCard(),
+
+                          const SizedBox(height: 30),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-
-            const SizedBox(height: 25),
-
-            // Profile Menu Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(left: 8, bottom: 8),
-                    child: Text(
-                      'Account Settings',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF2D3748),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  _buildMenuCard(
-                    icon: Icons.person_outline,
-                    iconColor: Colors.indigo,
-                    title: 'Personal Information',
-                    subtitle: 'Update your profile details',
-                    onTap: () {
-                      Navigator.pushNamed(context, '/account');
-                    },
-                  ),
-
-                  _buildMenuCard(
-                    icon: Icons.lock_outline,
-                    iconColor: Colors.blue,
-                    title: 'Password & Security',
-                    subtitle: 'Change password and security settings',
-                    onTap: () {
-                      // Navigate to security settings
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  const Padding(
-                    padding: EdgeInsets.only(left: 8, bottom: 8),
-                    child: Text(
-                      'Other',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF2D3748),
-                      ),
-                    ),
-                  ),
-
-                  _buildLogoutCard(context),
-
-                  const SizedBox(height: 30),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -273,13 +392,13 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLogoutCard(BuildContext context) {
+  Widget _buildLogoutCard() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15, top: 5),
       child: InkWell(
         onTap: () async {
           // Show confirmation dialog
-          bool confirmLogout = await _showLogoutConfirmationDialog(context);
+          bool confirmLogout = await _showLogoutConfirmationDialog();
 
           if (confirmLogout) {
             SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -356,7 +475,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Future<bool> _showLogoutConfirmationDialog(BuildContext context) async {
+  Future<bool> _showLogoutConfirmationDialog() async {
     return await showDialog<bool>(
           context: context,
           builder: (BuildContext context) {

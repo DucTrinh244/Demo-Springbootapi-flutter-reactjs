@@ -6,8 +6,6 @@ import 'package:flutter_managementproject/screens/models/TaskModel.dart';
 import 'package:flutter_managementproject/widgets/customer_drawer.dart';
 import 'package:http/http.dart' as http;
 
-// SubTask model class
-
 class MainTaskScreen extends StatefulWidget {
   const MainTaskScreen({super.key});
 
@@ -128,17 +126,10 @@ class _MainTaskScreenState extends State<MainTaskScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Tasks",
+          "Tasks Assigned to Me",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
         ),
-        actions: [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: Colors.indigo.shade100,
-            child: const Icon(Icons.person, color: Colors.indigo),
-          ),
-          const SizedBox(width: 16),
-        ],
+
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF2D3748),
@@ -158,20 +149,14 @@ class _MainTaskScreenState extends State<MainTaskScreen> {
   Widget _buildMyTasksTab() {
     return RefreshIndicator(
       onRefresh: _fetchMyTasks,
-      child: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Tasks Assigned to Me',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 8),
 
-            SizedBox(height: 18),
-
-            // Status categories
-            DefaultTabController(
+          // Status categories
+          Expanded(
+            child: DefaultTabController(
               length: 4,
               child: Column(
                 children: [
@@ -188,10 +173,7 @@ class _MainTaskScreenState extends State<MainTaskScreen> {
                     ],
                   ),
                   SizedBox(height: 16),
-                  SizedBox(
-                    height:
-                        MediaQuery.of(context).size.height *
-                        0.6, // Dynamic height
+                  Expanded(
                     child: TabBarView(
                       children: [
                         // All Tasks
@@ -200,7 +182,6 @@ class _MainTaskScreenState extends State<MainTaskScreen> {
                         // In Progress Tasks
                         _buildTasksListFromData(
                           _getFilteredTasks('in progress'),
-                          // In Progress Tasks
                         ),
 
                         // Completed Tasks
@@ -214,8 +195,8 @@ class _MainTaskScreenState extends State<MainTaskScreen> {
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -226,8 +207,7 @@ class _MainTaskScreenState extends State<MainTaskScreen> {
     }
 
     return ListView.separated(
-      physics: NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
+      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       itemCount: tasks.length,
       separatorBuilder: (context, index) => SizedBox(height: 16),
       itemBuilder: (context, index) {

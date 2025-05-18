@@ -45,7 +45,12 @@ class MyApp extends StatelessWidget {
       // routes: appRoutes,
       routes: {
         '/profile': (context) => const ProfileScreen(),
-        '/account': (context) => const AccountScreen(),
+        '/account': (context) {
+          final args =
+              ModalRoute.of(context)!.settings.arguments
+                  as Map<String, dynamic>?;
+          return AccountScreen(arguments: args ?? {});
+        },
         '/dashboard': (context) => const HomeScreen(),
         '/project': (context) => const MainProjectScreen(),
         '/task': (context) => const MainTaskScreen(),

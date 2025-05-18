@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class AccountScreen extends StatefulWidget {
-  const AccountScreen({super.key});
+  const AccountScreen({super.key, required Map<String, dynamic> arguments});
 
   @override
   State<AccountScreen> createState() => _AccountScreenState();
 }
 
 class _AccountScreenState extends State<AccountScreen> {
-  // Sample user data - in a real app, this would come from your backend
   final Map<String, dynamic> userData = {
     'name': 'John Doe',
     'email': 'johndoe@example.com',
@@ -56,21 +55,6 @@ class _AccountScreenState extends State<AccountScreen> {
       initialDate: selectedDate ?? DateTime.now(),
       firstDate: DateTime(1950),
       lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Colors.indigo,
-              onPrimary: Colors.white,
-              onSurface: Color(0xFF2D3748),
-            ),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(foregroundColor: Colors.indigo),
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
     if (picked != null && picked != selectedDate) {
       setState(() {
@@ -83,7 +67,6 @@ class _AccountScreenState extends State<AccountScreen> {
     setState(() {
       isEditing = !isEditing;
       if (!isEditing) {
-        // Save the changes (in a real app, you would send this to your backend)
         userData['name'] = nameController.text;
         userData['phone'] = phoneController.text;
         userData['address'] = addressController.text;
@@ -91,7 +74,6 @@ class _AccountScreenState extends State<AccountScreen> {
         userData['company'] = companyController.text;
         userData['dateOfBirth'] = selectedDate;
 
-        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Row(
@@ -123,9 +105,9 @@ class _AccountScreenState extends State<AccountScreen> {
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
-        elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF2D3748),
+        elevation: 0,
         actions: [
           TextButton.icon(
             onPressed: _toggleEdit,
@@ -144,7 +126,6 @@ class _AccountScreenState extends State<AccountScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
@@ -189,32 +170,26 @@ class _AccountScreenState extends State<AccountScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 20),
 
-            // User Information
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSectionTitle('Basic Details'),
-
                   _buildTextField(
                     label: 'Full Name',
                     controller: nameController,
                     icon: Icons.person_outline,
                     isEditable: isEditing,
                   ),
-
                   _buildTextField(
                     label: 'Email',
                     value: userData['email'],
                     icon: Icons.email_outlined,
-                    isEditable: false, // Email is not editable
+                    isEditable: false,
                     hintText: 'This field cannot be changed',
                   ),
-
                   _buildTextField(
                     label: 'Phone Number',
                     controller: phoneController,
@@ -222,8 +197,29 @@ class _AccountScreenState extends State<AccountScreen> {
                     isEditable: isEditing,
                     keyboardType: TextInputType.phone,
                   ),
-
-                  const SizedBox(height: 25),
+                  _buildDateField(
+                    label: 'Date of Birth',
+                    icon: Icons.calendar_today_outlined,
+                  ),
+                  _buildTextField(
+                    label: 'Address',
+                    controller: addressController,
+                    icon: Icons.home_outlined,
+                    isEditable: isEditing,
+                  ),
+                  _buildTextField(
+                    label: 'Occupation',
+                    controller: occupationController,
+                    icon: Icons.work_outline,
+                    isEditable: isEditing,
+                  ),
+                  _buildTextField(
+                    label: 'Company',
+                    controller: companyController,
+                    icon: Icons.business_outlined,
+                    isEditable: isEditing,
+                  ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -303,18 +299,10 @@ class _AccountScreenState extends State<AccountScreen> {
             isEditable
                 ? TextField(
                   controller: controller,
-                  enabled: isEditable,
                   keyboardType: keyboardType,
                   maxLines: maxLines,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF2D3748),
-                  ),
                   decoration: InputDecoration(
                     hintText: hintText,
-                    hintStyle: TextStyle(color: Colors.grey.shade400),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                    isDense: true,
                     border: InputBorder.none,
                   ),
                 )
@@ -354,42 +342,22 @@ class _AccountScreenState extends State<AccountScreen> {
         ),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Row(
-                children: [
-                  Icon(icon, size: 22, color: Colors.indigo),
-                  const SizedBox(width: 10),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade700,
-                    ),
-                  ),
-                ],
+              Icon(icon, size: 22, color: Colors.indigo),
+              const SizedBox(width: 10),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey.shade700,
+                ),
               ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      formattedDate,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF2D3748),
-                      ),
-                    ),
-                  ),
-                  if (isEditing)
-                    const Icon(
-                      Icons.calendar_month,
-                      color: Colors.indigo,
-                      size: 20,
-                    ),
-                ],
+              const SizedBox(width: 20),
+              Text(
+                formattedDate,
+                style: const TextStyle(fontSize: 16, color: Color(0xFF2D3748)),
               ),
             ],
           ),

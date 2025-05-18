@@ -259,18 +259,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               ],
             ),
             Spacer(),
-            OutlinedButton.icon(
-              onPressed: () {},
-              icon: Icon(Icons.person_add_alt),
-              label: Text('Add'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.deepPurple,
-                side: BorderSide(color: Colors.deepPurple),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            ),
           ],
         ),
       ],
